@@ -442,21 +442,8 @@
             <!-- Detailed table with assessment components (initially hidden) -->
             <div id="detailedTableContainer" style="display: none;">
                 <table class="subjects-table" id="detailedTable">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Subject</th>
-                            <th colspan="6">Assessment Components</th>
-                            <th rowspan="2">Total<br>(100)</th>
-                            <th rowspan="2">Grade</th>
-                        </tr>
-                        <tr>
-                            <th>Periodic<br><span class="component-weight">(10)</span></th>
-                            <th>Notebook<br><span class="component-weight">(05)</span></th>
-                            <th>Enrichment<br><span class="component-weight">(05)</span></th>
-                            <th>MDP<br><span class="component-weight">(20)</span></th>
-                            <th>Oral<br><span class="component-weight">(20)</span></th>
-                            <th>Mid-Term<br><span class="component-weight">(40)</span></th>
-                        </tr>
+                    <!-- Table headers will be created dynamically -->
+                    <thead id="detailedTableHead">
                     </thead>
                     <tbody id="detailedTableBody">
                         <!-- Detailed subject marks will be inserted here -->
@@ -500,15 +487,16 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Assessment Component Configuration
-        const ASSESSMENT_COMPONENTS = [
-            { id: 'periodic', name: 'Periodic_Test', weight: 10 },
-            { id: 'notebook', name: 'Notebook_Submission', weight: 5 },
-            { id: 'enrichment', name: 'Subject_Enrichment', weight: 5 },
-            { id: 'mdp', name: 'MDP', weight: 20 },
-            { id: 'oral', name: 'Oral_Test', weight: 20 },
-            { id: 'midterm', name: 'MidTerm_Exam', weight: 40 }
-        ];
+        // Common component names
+        const COMPONENT_NAMES = {
+            'Periodic_Test': { displayName: 'Periodic', weight: 10 },
+            'Notebook_Submission': { displayName: 'Notebook', weight: 5 },
+            'Subject_Enrichment': { displayName: 'Enrichment', weight: 5 },
+            'MDP': { displayName: 'MDP', weight: 20 },
+            'Oral_Test': { displayName: 'Oral', weight: 20 },
+            'MidTerm_Exam': { displayName: 'Mid-Term', weight: 40 },
+            'Learner_Diary': { displayName: 'Learner Diary', weight: 20 }
+        };
         
         // Flag to check if we need detailed view or not
         let useDetailedView = false;
@@ -520,39 +508,51 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Process the data to determine if we have detailed components
+                    // Process the data
                     const data = result.data;
+                    
+                    // Extract all active components for this student
+                    const activeComponents = new Set();
                     
                     // Group subjects by their base name (before the underscore)
                     const groupedSubjects = {};
                     const mainSubjects = [];
                     
                     if (data.subjects && Array.isArray(data.subjects)) {
+                        // First pass - identify all components and group subjects
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
                             const parts = subject.name.split('_');
                             const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
                             
-                            // Create the subject group if it doesn't exist
-                            if (!groupedSubjects[baseSubjectName]) {
-                                groupedSubjects[baseSubjectName] = {
-                                    name: baseSubjectName,
-                                    maxMarks: 100,
-                                    components: {},
-                                    // Initialize with zero, will calculate total later
-                                    obtained: 0,
-                                    // Will calculate grade based on total
-                                    grade: '-'
-                                };
-                            }
-                            
-                            // Check which component this is
-                            for (const component of ASSESSMENT_COMPONENTS) {
-                                if (subject.name.includes(`_${component.name}`)) {
-                                    groupedSubjects[baseSubjectName].components[component.id] = {
-                                        marks: subject.obtained || 0
+                            // Only process if there's a component (parts > 1)
+                            if (parts.length > 1) {
+                                const componentName = subject.name.substring(baseSubjectName.length + 1);
+                                
+                                // Create the subject group if it doesn't exist
+                                if (!groupedSubjects[baseSubjectName]) {
+                                    groupedSubjects[baseSubjectName] = {
+                                        name: baseSubjectName,
+                                        maxMarks: 100,
+                                        components: {},
+                                        obtained: 0,
+                                        grade: '-',
+                                        hasData: false
                                     };
-                                    break;
+                                }
+                                
+                                // Add the component to the subject and track it
+                                const marks = subject.obtained || 0;
+                                groupedSubjects[baseSubjectName].components[componentName] = {
+                                    marks: marks,
+                                    displayName: COMPONENT_NAMES[componentName]?.displayName || componentName,
+                                    weight: COMPONENT_NAMES[componentName]?.weight || 0
+                                };
+                                
+                                // If the component has marks > 0, add it to active components
+                                if (marks > 0) {
+                                    activeComponents.add(componentName);
+                                    groupedSubjects[baseSubjectName].hasData = true;
                                 }
                             }
                         });
@@ -563,30 +563,30 @@
                             let totalMarks = 0;
                             
                             // Sum up all component marks
-                            for (const componentId in subject.components) {
-                                totalMarks += subject.components[componentId].marks;
+                            for (const componentName in subject.components) {
+                                totalMarks += subject.components[componentName].marks;
                             }
                             
+                            // Update the subject's total marks and grade
                             subject.obtained = totalMarks;
                             subject.grade = calculateGrade(totalMarks);
                             
-                            mainSubjects.push(subject);
+                            // Only add subjects with data
+                            if (subject.hasData) {
+                                mainSubjects.push(subject);
+                            }
                         }
                         
                         // Check if any subjects have component data
-                        if (mainSubjects.length > 0) {
-                            mainSubjects.forEach(subject => {
-                                if (Object.keys(subject.components).length > 0) {
-                                    useDetailedView = true;
-                                }
-                            });
+                        if (mainSubjects.length > 0 && activeComponents.size > 0) {
+                            useDetailedView = true;
                         }
                     }
                     
-                    // Add flag to data object
+                    // Add processed data to the result
                     data.hasDetailedView = useDetailedView;
-                    // Add grouped subjects
                     data.groupedSubjects = mainSubjects;
+                    data.activeComponents = Array.from(activeComponents);
                     
                     return data;
                 }
@@ -678,8 +678,11 @@
                 simpleTableContainer.style.display = 'none';
                 detailedTableContainer.style.display = 'block';
                 
+                // Create dynamic table headers based on active components
+                createDetailedTableHeaders(data.activeComponents);
+                
                 // Populate the detailed table
-                populateDetailedTable(data.groupedSubjects);
+                populateDetailedTable(data.groupedSubjects, data.activeComponents);
             } else {
                 // Show the simple table and hide the detailed one
                 simpleTableContainer.style.display = 'block';
@@ -699,6 +702,61 @@
             const resultStatus = document.getElementById('resultStatus');
             resultStatus.textContent = data.result;
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
+        }
+
+        function createDetailedTableHeaders(activeComponents) {
+            const tableHead = document.getElementById('detailedTableHead');
+            tableHead.innerHTML = '';
+            
+            // Create first header row
+            const headerRow1 = document.createElement('tr');
+            
+            // Subject column (rowspan=2)
+            const subjectHeader = document.createElement('th');
+            subjectHeader.textContent = 'Subject';
+            subjectHeader.setAttribute('rowspan', '2');
+            headerRow1.appendChild(subjectHeader);
+            
+            // Components columns (colspan=activeComponents.length)
+            const componentsHeader = document.createElement('th');
+            componentsHeader.textContent = 'Assessment Components';
+            componentsHeader.setAttribute('colspan', activeComponents.length);
+            headerRow1.appendChild(componentsHeader);
+            
+            // Total column (rowspan=2)
+            const totalHeader = document.createElement('th');
+            totalHeader.textContent = 'Total';
+            totalHeader.setAttribute('rowspan', '2');
+            totalHeader.innerHTML += '<br>(100)';
+            headerRow1.appendChild(totalHeader);
+            
+            // Grade column (rowspan=2)
+            const gradeHeader = document.createElement('th');
+            gradeHeader.textContent = 'Grade';
+            gradeHeader.setAttribute('rowspan', '2');
+            headerRow1.appendChild(gradeHeader);
+            
+            // Create second header row for component names
+            const headerRow2 = document.createElement('tr');
+            
+            // Add each active component as a column
+            activeComponents.forEach(componentName => {
+                const componentHeader = document.createElement('th');
+                const displayInfo = COMPONENT_NAMES[componentName] || { displayName: componentName, weight: 0 };
+                
+                componentHeader.innerHTML = displayInfo.displayName;
+                if (displayInfo.weight > 0) {
+                    componentHeader.innerHTML += '<br><span class="component-weight">(' + 
+                        (displayInfo.weight < 10 ? '0' + displayInfo.weight : displayInfo.weight) + 
+                        ')</span>';
+                }
+                
+                headerRow2.appendChild(componentHeader);
+            });
+            
+            // Add headers to the table
+            tableHead.appendChild(headerRow1);
+            tableHead.appendChild(headerRow2);
         }
 
         function populateSimpleTable(subjects) {
@@ -731,7 +789,7 @@
             });
         }
 
-        function populateDetailedTable(subjects) {
+        function populateDetailedTable(subjects, activeComponents) {
             const tableBody = document.getElementById('detailedTableBody');
             tableBody.innerHTML = '';
             
@@ -744,12 +802,12 @@
                 nameCell.textContent = subject.name;
                 row.appendChild(nameCell);
                 
-                // Add cells for each component
-                ASSESSMENT_COMPONENTS.forEach(component => {
+                // Add cells for each active component
+                activeComponents.forEach(componentName => {
                     const cell = document.createElement('td');
                     
-                    if (subject.components && subject.components[component.id]) {
-                        cell.textContent = subject.components[component.id].marks;
+                    if (subject.components && subject.components[componentName]) {
+                        cell.textContent = subject.components[componentName].marks;
                     } else {
                         cell.textContent = '-';
                     }
