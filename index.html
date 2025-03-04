@@ -129,7 +129,6 @@
             border-collapse: collapse;
             margin-bottom: 15px;
             font-size: 14px;
-            table-layout: fixed;
         }
         
         .subjects-table th, .subjects-table td {
@@ -140,6 +139,10 @@
         
         .subjects-table th {
             background-color: #f5f5f5;
+        }
+        
+        .subjects-table th:first-child, .subjects-table td:first-child {
+            text-align: center;
         }
         
         .grade-A, .grade-A\+ { color: #4CAF50; font-weight: bold; }
@@ -355,21 +358,26 @@
             }
         }
         
-        /* Landscape print styles */
+        /* Landscape print styles - will be applied when body has 'print-landscape' class */
+        body.print-landscape {
+            width: auto;
+            height: auto;
+        }
+        
         @media print and (min-width: 800px) {
+            body.print-landscape .subjects-table {
+                font-size: 10px !important;
+            }
+            
+            body.print-landscape .subjects-table th, 
+            body.print-landscape .subjects-table td {
+                padding: 4px !important;
+            }
+            
             @page {
                 size: landscape;
                 margin: 10mm;
             }
-        }
-        
-        /* Debug section */
-        .debug-section {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-top: 20px;
-            display: none;
         }
     </style>
 </head>
@@ -382,16 +390,10 @@
         <div class="search-section">
             <input type="text" id="rollNumber" placeholder="Enter 5 Digits Admission No.">
             <button onclick="fetchResult()">Get Result</button>
-            <button onclick="toggleDebug()" style="background-color: #666;">Debug</button>
         </div>
         
         <div class="error-message" id="errorMessage">
             Student record not found. Please check the Enrollment number and try again.
-        </div>
-        
-        <div class="debug-section" id="debugSection">
-            <h3>Debug Information</h3>
-            <div id="debugInfo"></div>
         </div>
         
         <div class="result-card" id="resultCard">
@@ -400,7 +402,7 @@
                     <img src="https://i.imgur.com/GxoHln6.jpeg" alt="KVS" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <h2 id="schoolName">School Name</h2>
-                <p>Examination Results <span id="examYear">2024-25</span></p>
+                <p>Examination Results <span id="examYear"></span></p>
             </div>
             
             <div class="student-info">
@@ -420,44 +422,44 @@
                 <p><strong>Exam:</strong> <span id="examName">Final Term</span></p>
             </div>
             
-            <!-- Simple table view -->
+            <!-- Default table with simple columns (will be replaced with detailed one if needed) -->
             <div id="simpleTableContainer">
                 <table class="subjects-table" id="simpleTable">
                     <thead>
                         <tr>
-                            <th style="width:40%;">Subject</th>
-                            <th style="width:20%;">Max Marks</th>
-                            <th style="width:20%;">Marks Obtained</th>
-                            <th style="width:20%;">Grade</th>
+                            <th>Subject</th>
+                            <th>Max Marks</th>
+                            <th>Marks Obtained</th>
+                            <th>Grade</th>
                         </tr>
                     </thead>
                     <tbody id="simpleTableBody">
-                        <!-- Will be filled dynamically -->
+                        <!-- Subject marks will be inserted here -->
                     </tbody>
                 </table>
             </div>
             
-            <!-- Detailed table view -->
-            <div id="detailedTableContainer" style="display:none;">
+            <!-- Detailed table with assessment components (initially hidden) -->
+            <div id="detailedTableContainer" style="display: none;">
                 <table class="subjects-table" id="detailedTable">
                     <thead>
                         <tr>
-                            <th rowspan="2" style="width:16%;">Subject</th>
-                            <th colspan="6" style="width:60%;">Assessment Components</th>
-                            <th rowspan="2" style="width:12%;">Total<br>(100)</th>
-                            <th rowspan="2" style="width:12%;">Grade</th>
+                            <th rowspan="2">Subject</th>
+                            <th colspan="6">Assessment Components</th>
+                            <th rowspan="2">Total<br>(100)</th>
+                            <th rowspan="2">Grade</th>
                         </tr>
                         <tr>
-                            <th style="width:10%;">Periodic<br><span class="component-weight">(10)</span></th>
-                            <th style="width:10%;">Notebook<br><span class="component-weight">(05)</span></th>
-                            <th style="width:10%;">Enrichment<br><span class="component-weight">(05)</span></th>
-                            <th style="width:10%;">MDP<br><span class="component-weight">(20)</span></th>
-                            <th style="width:10%;">Oral<br><span class="component-weight">(20)</span></th>
-                            <th style="width:10%;">Mid-Term<br><span class="component-weight">(40)</span></th>
+                            <th>Periodic<br><span class="component-weight">(10)</span></th>
+                            <th>Notebook<br><span class="component-weight">(05)</span></th>
+                            <th>Enrichment<br><span class="component-weight">(05)</span></th>
+                            <th>MDP<br><span class="component-weight">(20)</span></th>
+                            <th>Oral<br><span class="component-weight">(20)</span></th>
+                            <th>Mid-Term<br><span class="component-weight">(40)</span></th>
                         </tr>
                     </thead>
                     <tbody id="detailedTableBody">
-                        <!-- Will be filled dynamically -->
+                        <!-- Detailed subject marks will be inserted here -->
                     </tbody>
                 </table>
             </div>
@@ -495,124 +497,106 @@
     </div>
 
     <script>
-        // API URL
+        // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
         // Assessment Component Configuration
         const ASSESSMENT_COMPONENTS = [
-            { id: 'periodic', name: 'Periodic_Test', displayName: 'Periodic Test', weight: 10 },
-            { id: 'notebook', name: 'Notebook_Submission', displayName: 'Notebook', weight: 5 },
-            { id: 'enrichment', name: 'Subject_Enrichment', displayName: 'Enrichment', weight: 5 },
-            { id: 'mdp', name: 'MDP', displayName: 'MDP', weight: 20 },
-            { id: 'oral', name: 'Oral_Test', displayName: 'Oral', weight: 20 },
-            { id: 'midterm', name: 'MidTerm_Exam', displayName: 'Mid-Term', weight: 40 }
+            { id: 'periodic', name: 'Periodic_Test', weight: 10 },
+            { id: 'notebook', name: 'Notebook_Submission', weight: 5 },
+            { id: 'enrichment', name: 'Subject_Enrichment', weight: 5 },
+            { id: 'mdp', name: 'MDP', weight: 20 },
+            { id: 'oral', name: 'Oral_Test', weight: 20 },
+            { id: 'midterm', name: 'MidTerm_Exam', weight: 40 }
         ];
         
-        // Debug functions
-        function addDebug(message) {
-            const debugDiv = document.getElementById('debugInfo');
-            const timestamp = new Date().toLocaleTimeString();
-            debugDiv.innerHTML += `<p><strong>${timestamp}:</strong> ${message}</p>`;
-            console.log(message);
-        }
+        // Flag to check if we need detailed view or not
+        let useDetailedView = false;
         
-        function toggleDebug() {
-            const debugSection = document.getElementById('debugSection');
-            debugSection.style.display = debugSection.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function debugObject(label, obj) {
-            addDebug(`${label}: ${JSON.stringify(obj)}`);
-        }
-        
-        // Main functions
         async function fetchDataFromBackend(rollNumber) {
             try {
-                addDebug(`Fetching data for roll number: ${rollNumber}`);
                 const url = `${API_BASE_URL}/api/student/${rollNumber}`;
-                
                 const response = await fetch(url);
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Process the data
-                    const processedData = processApiData(result.data);
-                    return processedData;
-                }
-                
-                return null;
-            } catch (error) {
-                addDebug(`Error fetching data: ${error.message}`);
-                return null;
-            }
-        }
-        
-        function processApiData(apiData) {
-            // Create a deep copy to avoid modifying the original
-            const data = JSON.parse(JSON.stringify(apiData));
-            
-            addDebug(`Processing API data with ${data.subjects?.length || 0} subjects`);
-            
-            // Group subjects by their base name (before the underscore)
-            const groupedSubjects = {};
-            const mainSubjects = [];
-            
-            if (data.subjects && Array.isArray(data.subjects)) {
-                data.subjects.forEach(subject => {
-                    // Extract the base subject name and component
-                    const parts = subject.name.split('_');
-                    const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
+                    // Process the data to determine if we have detailed components
+                    const data = result.data;
                     
-                    // Create the subject group if it doesn't exist
-                    if (!groupedSubjects[baseSubjectName]) {
-                        groupedSubjects[baseSubjectName] = {
-                            name: baseSubjectName,
-                            maxMarks: 100,
-                            components: {},
-                            // Initialize with zero, will calculate total later
-                            obtained: 0,
-                            // Will calculate grade based on total
-                            grade: '-'
-                        };
-                    }
+                    // Group subjects by their base name (before the underscore)
+                    const groupedSubjects = {};
+                    const mainSubjects = [];
                     
-                    // Check which component this is
-                    for (const component of ASSESSMENT_COMPONENTS) {
-                        if (subject.name.includes(`_${component.name}`)) {
-                            groupedSubjects[baseSubjectName].components[component.id] = {
-                                marks: subject.obtained || 0
-                            };
-                            break;
+                    if (data.subjects && Array.isArray(data.subjects)) {
+                        data.subjects.forEach(subject => {
+                            // Extract the base subject name and component
+                            const parts = subject.name.split('_');
+                            const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
+                            
+                            // Create the subject group if it doesn't exist
+                            if (!groupedSubjects[baseSubjectName]) {
+                                groupedSubjects[baseSubjectName] = {
+                                    name: baseSubjectName,
+                                    maxMarks: 100,
+                                    components: {},
+                                    // Initialize with zero, will calculate total later
+                                    obtained: 0,
+                                    // Will calculate grade based on total
+                                    grade: '-'
+                                };
+                            }
+                            
+                            // Check which component this is
+                            for (const component of ASSESSMENT_COMPONENTS) {
+                                if (subject.name.includes(`_${component.name}`)) {
+                                    groupedSubjects[baseSubjectName].components[component.id] = {
+                                        marks: subject.obtained || 0
+                                    };
+                                    break;
+                                }
+                            }
+                        });
+                        
+                        // Calculate total marks and grades for each subject
+                        for (const baseSubjectName in groupedSubjects) {
+                            const subject = groupedSubjects[baseSubjectName];
+                            let totalMarks = 0;
+                            
+                            // Sum up all component marks
+                            for (const componentId in subject.components) {
+                                totalMarks += subject.components[componentId].marks;
+                            }
+                            
+                            subject.obtained = totalMarks;
+                            subject.grade = calculateGrade(totalMarks);
+                            
+                            mainSubjects.push(subject);
+                        }
+                        
+                        // Check if any subjects have component data
+                        if (mainSubjects.length > 0) {
+                            mainSubjects.forEach(subject => {
+                                if (Object.keys(subject.components).length > 0) {
+                                    useDetailedView = true;
+                                }
+                            });
                         }
                     }
-                });
-                
-                // Calculate total marks and grades for each subject
-                for (const baseSubjectName in groupedSubjects) {
-                    const subject = groupedSubjects[baseSubjectName];
-                    let totalMarks = 0;
                     
-                    // Sum up all component marks
-                    for (const componentId in subject.components) {
-                        totalMarks += subject.components[componentId].marks;
-                    }
+                    // Add flag to data object
+                    data.hasDetailedView = useDetailedView;
+                    // Add grouped subjects
+                    data.groupedSubjects = mainSubjects;
                     
-                    subject.obtained = totalMarks;
-                    subject.grade = calculateGrade(totalMarks);
-                    
-                    mainSubjects.push(subject);
+                    return data;
                 }
-                
-                // Replace the original subjects with the grouped ones
-                data.groupedSubjects = mainSubjects;
-                
-                addDebug(`Grouped into ${mainSubjects.length} main subjects`);
-                debugObject("Grouped subjects", mainSubjects);
+                return null; // Student not found
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
             }
-            
-            return data;
         }
-        
+
         function calculateGrade(marks) {
             if (marks >= 90) return 'A';
             else if (marks >= 80) return 'B';
@@ -621,52 +605,87 @@
             else if (marks >= 50) return 'E';
             else return 'F';
         }
-        
+
         function getGradeClass(grade) {
+            // Extract the base grade letter (A, B, C, D, E, F) from the grade
+            // This handles grades with + symbols like A+, B+, etc.
             const baseGrade = grade.charAt(0);
             return `grade-${baseGrade}`;
         }
-        
+
         function displayResult(data, rollNumber) {
             // Set student info
             document.getElementById('studentName').textContent = data.name;
             document.getElementById('studentRoll').textContent = rollNumber;
             document.getElementById('studentClass').textContent = data.class;
+            document.getElementById('examYear').textContent = "2024-25";
             document.getElementById('schoolName').textContent = data.school;
-            document.getElementById('examName').textContent = data.examName;
+            document.getElementById('examName').textContent = data.examName; // Use the exam name from the backend
             
-            // Set additional info
+            // Set new fields
             document.getElementById('studentDOB').textContent = data.dob;
             document.getElementById('fatherName').textContent = data.fatherName;
             document.getElementById('motherName').textContent = data.motherName;
             
-            // Handle signature
+            // Handle the signature image - improved version with pre-checking
             const signatureImg = document.getElementById('examInchargeSignature');
-            if (data.examInchargeSignature) {
-                signatureImg.src = data.examInchargeSignature;
-                signatureImg.style.display = 'block';
+            
+            // Function to check if image exists and display it
+            function checkAndDisplayImage(imgSrc) {
+                return new Promise((resolve) => {
+                    const tempImg = new Image();
+                    tempImg.onload = function() {
+                        signatureImg.src = imgSrc;
+                        signatureImg.style.display = 'block';
+                        resolve(true);
+                    };
+                    tempImg.onerror = function() {
+                        resolve(false);
+                    };
+                    tempImg.src = imgSrc;
+                });
             }
             
-            // Determine if we should show detailed or simple view
-            const useDetailedView = data.groupedSubjects.some(subject => 
-                Object.keys(subject.components).length > 0
-            );
+            // Try to load the custom signature or default signature
+            async function handleSignature() {
+                // Check if we have a custom signature
+                if (data.examInchargeSignature && 
+                    data.examInchargeSignature.trim() !== '' && 
+                    data.examInchargeSignature !== 'Exam Incharge.png') {
+                    
+                    // Try the custom signature
+                    const customSignatureWorks = await checkAndDisplayImage(data.examInchargeSignature);
+                    if (customSignatureWorks) return;
+                }
+                
+                // Try the default signature
+                const defaultSignatureWorks = await checkAndDisplayImage('Exam Incharge.png');
+                if (!defaultSignatureWorks) {
+                    // If neither signature works, hide the image
+                    signatureImg.style.display = 'none';
+                }
+            }
             
-            // Set up the tables
+            // Call the function to handle signatures
+            handleSignature();
+            
+            // Decide which table to show based on available data
             const simpleTableContainer = document.getElementById('simpleTableContainer');
             const detailedTableContainer = document.getElementById('detailedTableContainer');
             
-            if (useDetailedView) {
-                // Show detailed table
+            if (data.hasDetailedView) {
+                // Show the detailed table and hide the simple one
                 simpleTableContainer.style.display = 'none';
                 detailedTableContainer.style.display = 'block';
                 
+                // Populate the detailed table
                 populateDetailedTable(data.groupedSubjects);
             } else {
-                // Show simple table
+                // Show the simple table and hide the detailed one
                 simpleTableContainer.style.display = 'block';
                 detailedTableContainer.style.display = 'none';
                 
+                // Populate the simple table
                 populateSimpleTable(data.groupedSubjects);
             }
             
@@ -677,39 +696,31 @@
             document.getElementById('cgpa').textContent = data.cgpa;
             
             // Set result
-            document.getElementById('resultStatus').textContent = data.result;
-            document.getElementById('resultStatus').className = data.result.toLowerCase().includes('pass') ? 'pass' : 'fail';
+            const resultStatus = document.getElementById('resultStatus');
+            resultStatus.textContent = data.result;
+            resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
         }
-        
+
         function populateSimpleTable(subjects) {
             const tableBody = document.getElementById('simpleTableBody');
             tableBody.innerHTML = '';
             
-            addDebug(`Populating simple table with ${subjects.length} subjects`);
-            
+            // Add subject rows to the simple table
             subjects.forEach(subject => {
                 const row = document.createElement('tr');
                 
                 const nameCell = document.createElement('td');
                 nameCell.textContent = subject.name;
-                nameCell.style.textAlign = 'center';
-                nameCell.style.width = '40%';
                 
                 const maxMarksCell = document.createElement('td');
                 maxMarksCell.textContent = subject.maxMarks;
-                maxMarksCell.style.textAlign = 'center';
-                maxMarksCell.style.width = '20%';
                 
                 const obtainedCell = document.createElement('td');
-                obtainedCell.textContent = subject.obtained;
-                obtainedCell.style.textAlign = 'center';
-                obtainedCell.style.width = '20%';
+                obtainedCell.textContent = subject.obtained || '0';
                 
                 const gradeCell = document.createElement('td');
                 gradeCell.textContent = subject.grade;
                 gradeCell.className = getGradeClass(subject.grade);
-                gradeCell.style.textAlign = 'center';
-                gradeCell.style.width = '20%';
                 
                 row.appendChild(nameCell);
                 row.appendChild(maxMarksCell);
@@ -719,91 +730,95 @@
                 tableBody.appendChild(row);
             });
         }
-        
+
         function populateDetailedTable(subjects) {
             const tableBody = document.getElementById('detailedTableBody');
             tableBody.innerHTML = '';
             
-            addDebug(`Populating detailed table with ${subjects.length} subjects`);
-            
+            // Add subject rows to the detailed table
             subjects.forEach(subject => {
                 const row = document.createElement('tr');
                 
-                // Add subject name cell
+                // Add subject name
                 const nameCell = document.createElement('td');
                 nameCell.textContent = subject.name;
-                nameCell.style.textAlign = 'center';
-                nameCell.style.width = '16%';
                 row.appendChild(nameCell);
                 
                 // Add cells for each component
                 ASSESSMENT_COMPONENTS.forEach(component => {
                     const cell = document.createElement('td');
-                    const marks = subject.components[component.id]?.marks || '-';
-                    cell.textContent = marks;
-                    cell.style.textAlign = 'center';
-                    cell.style.width = '10%';
+                    
+                    if (subject.components && subject.components[component.id]) {
+                        cell.textContent = subject.components[component.id].marks;
+                    } else {
+                        cell.textContent = '-';
+                    }
+                    
                     row.appendChild(cell);
                 });
                 
-                // Add total marks cell
+                // Add total cell
                 const totalCell = document.createElement('td');
-                totalCell.textContent = subject.obtained;
-                totalCell.style.textAlign = 'center';
-                totalCell.style.width = '12%';
+                totalCell.textContent = subject.obtained || '0';
                 row.appendChild(totalCell);
                 
                 // Add grade cell
                 const gradeCell = document.createElement('td');
                 gradeCell.textContent = subject.grade;
                 gradeCell.className = getGradeClass(subject.grade);
-                gradeCell.style.textAlign = 'center';
-                gradeCell.style.width = '12%';
                 row.appendChild(gradeCell);
                 
                 tableBody.appendChild(row);
             });
         }
-        
-        async function fetchResult() {
-            const rollNumber = document.getElementById('rollNumber').value.trim();
+
+        function fetchResult() {
+            const rollNumber = document.getElementById('rollNumber').value;
             const resultCard = document.getElementById('resultCard');
             const errorMessage = document.getElementById('errorMessage');
             
             // Reset display
             resultCard.style.display = 'none';
             errorMessage.style.display = 'none';
-            document.getElementById('debugInfo').innerHTML = '';
+            
+            // Reset detailed view flag
+            useDetailedView = false;
             
             // Validate input
-            if (!rollNumber) {
+            if (!rollNumber.trim()) {
                 errorMessage.textContent = "Please enter an admission number";
                 errorMessage.style.display = 'block';
                 return;
             }
             
-            addDebug(`Starting fetch for roll number: ${rollNumber}`);
-            
             // Fetch data from backend
-            const data = await fetchDataFromBackend(rollNumber);
-            
-            if (data) {
-                displayResult(data, rollNumber);
-                resultCard.style.display = 'block';
-                addDebug("Successfully displayed result");
-            } else {
-                errorMessage.style.display = 'block';
-                addDebug("No data found or error occurred");
-            }
+            fetchDataFromBackend(rollNumber).then(data => {
+                if (data) {
+                    displayResult(data, rollNumber);
+                    resultCard.style.display = 'block';
+                } else {
+                    errorMessage.style.display = 'block';
+                }
+            });
         }
         
         function printResult() {
+            // Make sure the result card is visible
             const resultCard = document.getElementById('resultCard');
             if (resultCard.style.display === 'none') {
                 alert('Please search for a student result first');
                 return;
             }
             
+            // Check if we need landscape mode (for detailed table)
+            const detailedTable = document.getElementById('detailedTableContainer');
+            if (detailedTable.style.display !== 'none') {
+                document.body.classList.add('print-landscape');
+            } else {
+                document.body.classList.remove('print-landscape');
+            }
+            
+            // Print the page
             window.print();
         }
         
@@ -812,11 +827,6 @@
             if (e.key === 'Enter') {
                 fetchResult();
             }
-        });
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("Exam Results Portal loaded");
         });
     </script>
 </body>
