@@ -124,47 +124,21 @@
             margin: 5px 0;
         }
         
-        /* AGGRESSIVE TABLE STYLING */
         .subjects-table {
             width: 100%;
-            table-layout: fixed !important;
-            border-collapse: collapse !important;
+            border-collapse: collapse;
             margin-bottom: 15px;
             font-size: 14px;
-            display: table !important;
         }
         
-        .subjects-table thead {
-            display: table-header-group !important;
-        }
-        
-        .subjects-table tbody {
-            display: table-row-group !important;
-        }
-        
-        .subjects-table tr {
-            display: table-row !important;
-        }
-        
-        .subjects-table th, 
-        .subjects-table td {
-            display: table-cell !important;
-            border: 1px solid #ddd !important;
-            padding: 8px !important;
-            text-align: center !important;
-            vertical-align: middle !important;
-            width: auto !important;
+        .subjects-table th, .subjects-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
         }
         
         .subjects-table th {
             background-color: #f5f5f5;
-        }
-        
-        /* Fix for first column */
-        .subjects-table th:first-child, 
-        .subjects-table td:first-child {
-            width: 25% !important;
-            text-align: center !important;
         }
         
         .grade-A, .grade-A\+ { color: #4CAF50; font-weight: bold; }
@@ -303,7 +277,7 @@
             }
             
             .subjects-table th, .subjects-table td {
-                padding: 3px !important;
+                padding: 3px;
             }
             
             .component-weight {
@@ -444,44 +418,44 @@
                 <p><strong>Exam:</strong> <span id="examName">Final Term</span></p>
             </div>
             
-            <!-- Default table with simple columns (will be replaced with detailed one if needed) -->
+            <!-- Simple table with fixed structure -->
             <div id="simpleTableContainer">
-                <table class="subjects-table" id="simpleTable">
+                <table class="subjects-table" id="simpleTable" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th style="width:40%;">Subject</th>
-                            <th style="width:20%;">Max Marks</th>
-                            <th style="width:20%;">Marks Obtained</th>
-                            <th style="width:20%;">Grade</th>
+                            <th style="width: 40%; text-align: center;">Subject</th>
+                            <th style="width: 20%; text-align: center;">Max Marks</th>
+                            <th style="width: 20%; text-align: center;">Marks Obtained</th>
+                            <th style="width: 20%; text-align: center;">Grade</th>
                         </tr>
                     </thead>
                     <tbody id="simpleTableBody">
-                        <!-- Subject marks will be inserted here -->
+                        <!-- Will be filled by JavaScript -->
                     </tbody>
                 </table>
             </div>
             
-            <!-- Detailed table with assessment components (initially hidden) -->
+            <!-- Detailed table with fixed structure -->
             <div id="detailedTableContainer" style="display: none;">
-                <table class="subjects-table" id="detailedTable">
+                <table class="subjects-table" id="detailedTable" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th rowspan="2" style="width:15%;">Subject</th>
-                            <th colspan="6" style="width:60%;">Assessment Components</th>
-                            <th rowspan="2" style="width:12.5%;">Total<br>(100)</th>
-                            <th rowspan="2" style="width:12.5%;">Grade</th>
+                            <th rowspan="2" style="width: 16%; text-align: center;">Subject</th>
+                            <th colspan="6" style="text-align: center;">Assessment Components</th>
+                            <th rowspan="2" style="width: 12%; text-align: center;">Total<br>(100)</th>
+                            <th rowspan="2" style="width: 12%; text-align: center;">Grade</th>
                         </tr>
                         <tr>
-                            <th style="width:10%;">Periodic<br><span class="component-weight">(10)</span></th>
-                            <th style="width:10%;">Notebook<br><span class="component-weight">(05)</span></th>
-                            <th style="width:10%;">Enrichment<br><span class="component-weight">(05)</span></th>
-                            <th style="width:10%;">MDP<br><span class="component-weight">(20)</span></th>
-                            <th style="width:10%;">Oral<br><span class="component-weight">(20)</span></th>
-                            <th style="width:10%;">Mid-Term<br><span class="component-weight">(40)</span></th>
+                            <th style="width: 10%; text-align: center;">Periodic<br><span class="component-weight">(10)</span></th>
+                            <th style="width: 10%; text-align: center;">Notebook<br><span class="component-weight">(05)</span></th>
+                            <th style="width: 10%; text-align: center;">Enrichment<br><span class="component-weight">(05)</span></th>
+                            <th style="width: 10%; text-align: center;">MDP<br><span class="component-weight">(20)</span></th>
+                            <th style="width: 10%; text-align: center;">Oral<br><span class="component-weight">(20)</span></th>
+                            <th style="width: 10%; text-align: center;">Mid-Term<br><span class="component-weight">(40)</span></th>
                         </tr>
                     </thead>
                     <tbody id="detailedTableBody">
-                        <!-- Detailed subject marks will be inserted here -->
+                        <!-- Will be filled by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -545,8 +519,12 @@
                     // Process the data to determine if we have detailed components
                     const data = result.data;
                     
+                    // Logging the data to debug
+                    console.log("API Response Data:", data);
+                    
                     // Check if any subjects have component data
                     if (data.subjects && data.subjects.length > 0) {
+                        console.log("Subjects array:", data.subjects);
                         data.subjects.forEach(subject => {
                             if (subject.components && Object.keys(subject.components).length > 0) {
                                 useDetailedView = true;
@@ -596,7 +574,7 @@
             document.getElementById('fatherName').textContent = data.fatherName;
             document.getElementById('motherName').textContent = data.motherName;
             
-            // Handle the signature image - improved version with pre-checking
+            // Handle the signature image
             const signatureImg = document.getElementById('examInchargeSignature');
             
             // Function to check if image exists and display it
@@ -670,59 +648,78 @@
             resultStatus.className = data.result === 'PASS' ? 'pass' : 'fail';
         }
 
+        // Use a completely different approach for creating the table
         function populateSimpleTable(subjects) {
+            console.log("Populating simple table with subjects:", subjects);
+            
+            // Get table body
             const tableBody = document.getElementById('simpleTableBody');
+            
+            // Clear existing rows
             tableBody.innerHTML = '';
             
-            // Add subject rows to the simple table
+            // Simple table template
+            let tableHtml = '';
+            
+            // Add each subject row
             subjects.forEach(subject => {
-                // Create a new row as an HTML string for better consistency
-                const rowHtml = `
-                    <tr>
-                        <td style="width:40%; text-align:center !important;">${subject.name}</td>
-                        <td style="width:20%; text-align:center !important;">${subject.maxMarks}</td>
-                        <td style="width:20%; text-align:center !important;">${subject.obtained || '0'}</td>
-                        <td style="width:20%; text-align:center !important;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
-                    </tr>
+                tableHtml += `
+                <tr>
+                    <td style="width: 40%; text-align: center;">${subject.name}</td>
+                    <td style="width: 20%; text-align: center;">${subject.maxMarks}</td>
+                    <td style="width: 20%; text-align: center;">${subject.obtained || '0'}</td>
+                    <td style="width: 20%; text-align: center;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
+                </tr>
                 `;
-                
-                // Insert the row HTML
-                tableBody.insertAdjacentHTML('beforeend', rowHtml);
             });
+            
+            // Set the HTML directly
+            tableBody.innerHTML = tableHtml;
+            
+            console.log("Simple table populated:", tableBody.innerHTML);
         }
 
         function populateDetailedTable(subjects) {
+            console.log("Populating detailed table with subjects:", subjects);
+            
+            // Get table body
             const tableBody = document.getElementById('detailedTableBody');
+            
+            // Clear existing rows
             tableBody.innerHTML = '';
             
-            // Add subject rows to the detailed table
+            // Detailed table template
+            let tableHtml = '';
+            
+            // Add each subject row
             subjects.forEach(subject => {
-                // Prepare component cells HTML
-                let componentCellsHtml = '';
+                // Start the row
+                let rowHtml = `<tr>
+                    <td style="width: 16%; text-align: center;">${subject.name}</td>`;
                 
+                // Add component cells
                 ASSESSMENT_COMPONENTS.forEach(component => {
                     const marks = subject.components && subject.components[component.id] 
                         ? subject.components[component.id].marks 
                         : '-';
                     
-                    componentCellsHtml += `
-                        <td style="width:10%; text-align:center !important;">${marks}</td>
-                    `;
+                    rowHtml += `<td style="width: 10%; text-align: center;">${marks}</td>`;
                 });
                 
-                // Create a complete row as HTML string
-                const rowHtml = `
-                    <tr>
-                        <td style="width:15%; text-align:center !important;">${subject.name}</td>
-                        ${componentCellsHtml}
-                        <td style="width:12.5%; text-align:center !important;">${subject.obtained || '0'}</td>
-                        <td style="width:12.5%; text-align:center !important;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
-                    </tr>
-                `;
+                // Finish the row with total and grade
+                rowHtml += `
+                    <td style="width: 12%; text-align: center;">${subject.obtained || '0'}</td>
+                    <td style="width: 12%; text-align: center;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
+                </tr>`;
                 
-                // Insert the row HTML
-                tableBody.insertAdjacentHTML('beforeend', rowHtml);
+                // Add to table HTML
+                tableHtml += rowHtml;
             });
+            
+            // Set the HTML directly
+            tableBody.innerHTML = tableHtml;
+            
+            console.log("Detailed table populated:", tableBody.innerHTML);
         }
 
         function fetchResult() {
@@ -744,12 +741,16 @@
                 return;
             }
             
+            console.log("Fetching data for roll number:", rollNumber);
+            
             // Fetch data from backend
             fetchDataFromBackend(rollNumber).then(data => {
                 if (data) {
+                    console.log("Successfully fetched data:", data);
                     displayResult(data, rollNumber);
                     resultCard.style.display = 'block';
                 } else {
+                    console.log("No data found for roll number:", rollNumber);
                     errorMessage.style.display = 'block';
                 }
             });
@@ -780,6 +781,11 @@
             if (e.key === 'Enter') {
                 fetchResult();
             }
+        });
+
+        // Add debugging to help identify issues
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log("Page loaded. Exam Results Portal ready.");
         });
     </script>
 </body>
