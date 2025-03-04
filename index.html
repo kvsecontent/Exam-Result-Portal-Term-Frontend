@@ -124,26 +124,47 @@
             margin: 5px 0;
         }
         
+        /* AGGRESSIVE TABLE STYLING */
         .subjects-table {
             width: 100%;
-            border-collapse: collapse;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
             margin-bottom: 15px;
             font-size: 14px;
-            table-layout: fixed;
+            display: table !important;
         }
         
-        .subjects-table th, .subjects-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        .subjects-table thead {
+            display: table-header-group !important;
+        }
+        
+        .subjects-table tbody {
+            display: table-row-group !important;
+        }
+        
+        .subjects-table tr {
+            display: table-row !important;
+        }
+        
+        .subjects-table th, 
+        .subjects-table td {
+            display: table-cell !important;
+            border: 1px solid #ddd !important;
+            padding: 8px !important;
             text-align: center !important;
+            vertical-align: middle !important;
+            width: auto !important;
         }
         
         .subjects-table th {
             background-color: #f5f5f5;
         }
         
-        .subjects-table th:first-child, .subjects-table td:first-child {
-            text-align: center;
+        /* Fix for first column */
+        .subjects-table th:first-child, 
+        .subjects-table td:first-child {
+            width: 25% !important;
+            text-align: center !important;
         }
         
         .grade-A, .grade-A\+ { color: #4CAF50; font-weight: bold; }
@@ -282,7 +303,7 @@
             }
             
             .subjects-table th, .subjects-table td {
-                padding: 3px;
+                padding: 3px !important;
             }
             
             .component-weight {
@@ -428,10 +449,10 @@
                 <table class="subjects-table" id="simpleTable">
                     <thead>
                         <tr>
-                            <th>Subject</th>
-                            <th>Max Marks</th>
-                            <th>Marks Obtained</th>
-                            <th>Grade</th>
+                            <th style="width:40%;">Subject</th>
+                            <th style="width:20%;">Max Marks</th>
+                            <th style="width:20%;">Marks Obtained</th>
+                            <th style="width:20%;">Grade</th>
                         </tr>
                     </thead>
                     <tbody id="simpleTableBody">
@@ -445,18 +466,18 @@
                 <table class="subjects-table" id="detailedTable">
                     <thead>
                         <tr>
-                            <th rowspan="2">Subject</th>
-                            <th colspan="6">Assessment Components</th>
-                            <th rowspan="2">Total<br>(100)</th>
-                            <th rowspan="2">Grade</th>
+                            <th rowspan="2" style="width:15%;">Subject</th>
+                            <th colspan="6" style="width:60%;">Assessment Components</th>
+                            <th rowspan="2" style="width:12.5%;">Total<br>(100)</th>
+                            <th rowspan="2" style="width:12.5%;">Grade</th>
                         </tr>
                         <tr>
-                            <th>Periodic<br><span class="component-weight">(10)</span></th>
-                            <th>Notebook<br><span class="component-weight">(05)</span></th>
-                            <th>Enrichment<br><span class="component-weight">(05)</span></th>
-                            <th>MDP<br><span class="component-weight">(20)</span></th>
-                            <th>Oral<br><span class="component-weight">(20)</span></th>
-                            <th>Mid-Term<br><span class="component-weight">(40)</span></th>
+                            <th style="width:10%;">Periodic<br><span class="component-weight">(10)</span></th>
+                            <th style="width:10%;">Notebook<br><span class="component-weight">(05)</span></th>
+                            <th style="width:10%;">Enrichment<br><span class="component-weight">(05)</span></th>
+                            <th style="width:10%;">MDP<br><span class="component-weight">(20)</span></th>
+                            <th style="width:10%;">Oral<br><span class="component-weight">(20)</span></th>
+                            <th style="width:10%;">Mid-Term<br><span class="component-weight">(40)</span></th>
                         </tr>
                     </thead>
                     <tbody id="detailedTableBody">
@@ -655,27 +676,18 @@
             
             // Add subject rows to the simple table
             subjects.forEach(subject => {
-                const row = document.createElement('tr');
+                // Create a new row as an HTML string for better consistency
+                const rowHtml = `
+                    <tr>
+                        <td style="width:40%; text-align:center !important;">${subject.name}</td>
+                        <td style="width:20%; text-align:center !important;">${subject.maxMarks}</td>
+                        <td style="width:20%; text-align:center !important;">${subject.obtained || '0'}</td>
+                        <td style="width:20%; text-align:center !important;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
+                    </tr>
+                `;
                 
-                const nameCell = document.createElement('td');
-                nameCell.textContent = subject.name;
-                
-                const maxMarksCell = document.createElement('td');
-                maxMarksCell.textContent = subject.maxMarks;
-                
-                const obtainedCell = document.createElement('td');
-                obtainedCell.textContent = subject.obtained || '0';
-                
-                const gradeCell = document.createElement('td');
-                gradeCell.textContent = subject.grade;
-                gradeCell.className = getGradeClass(subject.grade);
-                
-                row.appendChild(nameCell);
-                row.appendChild(maxMarksCell);
-                row.appendChild(obtainedCell);
-                row.appendChild(gradeCell);
-                
-                tableBody.appendChild(row);
+                // Insert the row HTML
+                tableBody.insertAdjacentHTML('beforeend', rowHtml);
             });
         }
 
@@ -685,38 +697,31 @@
             
             // Add subject rows to the detailed table
             subjects.forEach(subject => {
-                const row = document.createElement('tr');
+                // Prepare component cells HTML
+                let componentCellsHtml = '';
                 
-                // Add subject name
-                const nameCell = document.createElement('td');
-                nameCell.textContent = subject.name;
-                row.appendChild(nameCell);
-                
-                // Add cells for each component
                 ASSESSMENT_COMPONENTS.forEach(component => {
-                    const cell = document.createElement('td');
+                    const marks = subject.components && subject.components[component.id] 
+                        ? subject.components[component.id].marks 
+                        : '-';
                     
-                    if (subject.components && subject.components[component.id]) {
-                        cell.textContent = subject.components[component.id].marks;
-                    } else {
-                        cell.textContent = '-';
-                    }
-                    
-                    row.appendChild(cell);
+                    componentCellsHtml += `
+                        <td style="width:10%; text-align:center !important;">${marks}</td>
+                    `;
                 });
                 
-                // Add total cell
-                const totalCell = document.createElement('td');
-                totalCell.textContent = subject.obtained || '0';
-                row.appendChild(totalCell);
+                // Create a complete row as HTML string
+                const rowHtml = `
+                    <tr>
+                        <td style="width:15%; text-align:center !important;">${subject.name}</td>
+                        ${componentCellsHtml}
+                        <td style="width:12.5%; text-align:center !important;">${subject.obtained || '0'}</td>
+                        <td style="width:12.5%; text-align:center !important;" class="${getGradeClass(subject.grade)}">${subject.grade}</td>
+                    </tr>
+                `;
                 
-                // Add grade cell
-                const gradeCell = document.createElement('td');
-                gradeCell.textContent = subject.grade;
-                gradeCell.className = getGradeClass(subject.grade);
-                row.appendChild(gradeCell);
-                
-                tableBody.appendChild(row);
+                // Insert the row HTML
+                tableBody.insertAdjacentHTML('beforeend', rowHtml);
             });
         }
 
