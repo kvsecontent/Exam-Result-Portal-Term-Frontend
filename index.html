@@ -38,21 +38,11 @@
             padding: 15px;
             text-align: center;
             border-bottom: 1px solid #eee;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .search-field {
-            flex: 1;
-            max-width: 250px;
-            min-width: 200px;
         }
         
         input[type="text"] {
             padding: 10px;
-            width: 100%;
+            width: 200px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
@@ -66,7 +56,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            min-width: 150px;
+            margin-left: 10px;
         }
         
         button:hover {
@@ -532,12 +522,7 @@
         </div>
         
         <div class="search-section">
-            <div class="search-field">
-                <input type="text" id="rollNumber" placeholder="Enter 5 Digits Admission No.">
-            </div>
-            <div class="search-field">
-                <input type="text" id="schoolCode" placeholder="Enter Your School Code">
-            </div>
+            <input type="text" id="rollNumber" placeholder="Enter 5 Digits Admission No.">
             <button id="searchButton" onclick="fetchResult()">Get Result</button>
         </div>
         
@@ -731,7 +716,7 @@
         // Flag to check if we need detailed view or not
         let useDetailedView = false;
         
-        async function fetchDataFromBackend(rollNumber, schoolCode) {
+        async function fetchDataFromBackend(rollNumber) {
             try {
                 // Start timing the API response
                 apiResponseStart = Date.now();
@@ -754,8 +739,7 @@
                     }
                 }, 3000);
                 
-                // Add schoolCode as a parameter to the API call
-                const url = `${API_BASE_URL}/api/student/${rollNumber}?school_code=${schoolCode}`;
+                const url = `${API_BASE_URL}/api/student/${rollNumber}`;
                 const response = await fetch(url);
                 const result = await response.json();
                 
@@ -1241,7 +1225,6 @@
 
         function fetchResult() {
             const rollNumber = document.getElementById('rollNumber').value;
-            const schoolCode = document.getElementById('schoolCode').value;
             const resultCard = document.getElementById('resultCard');
             const errorMessage = document.getElementById('errorMessage');
             
@@ -1259,19 +1242,12 @@
                 return;
             }
             
-            if (!schoolCode.trim()) {
-                errorMessage.textContent = "Please enter your school code";
-                errorMessage.style.display = 'block';
-                return;
-            }
-            
             // Fetch data from backend
-            fetchDataFromBackend(rollNumber, schoolCode).then(data => {
+            fetchDataFromBackend(rollNumber).then(data => {
                 if (data) {
                     displayResult(data, rollNumber);
                     resultCard.style.display = 'block';
                 } else {
-                    errorMessage.textContent = "Student record not found. Please check the admission number and school code and try again.";
                     errorMessage.style.display = 'block';
                 }
             });
@@ -1297,19 +1273,8 @@
             window.print();
         }
         
-        // Add event listener for Enter key on both input fields
+        // Add event listener for Enter key on roll number input
         document.getElementById('rollNumber').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                // Focus on school code if it's empty, otherwise fetch results
-                if (!document.getElementById('schoolCode').value.trim()) {
-                    document.getElementById('schoolCode').focus();
-                } else {
-                    fetchResult();
-                }
-            }
-        });
-        
-        document.getElementById('schoolCode').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 fetchResult();
             }
