@@ -261,6 +261,8 @@
         .component-weight {
             font-size: 11px;
             color: #666;
+            display: inline-block; 
+            margin-top: 4px;
         }
         
         /* Skeleton loading animation */
@@ -744,25 +746,27 @@
                     const mainSubjects = [];
                     
                     if (data.subjects && Array.isArray(data.subjects)) {
-                        // Check if we're dealing with Periodic_Test_Max_Marks or just Max_Marks
-            data.subjects.forEach(subject => {
-                if (subject.name.endsWith('_Max_Marks')) {
-                    const parts = subject.name.split('_Max_Marks')[0].split('_');
-                    const baseSubjectName = parts[0]; // First part is subject name
-                    
-                    if (parts.length > 1) {
-                        // Extract component name (everything between subject name and _Max_Marks)
-                        const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
-                        const maxMarks = subject.obtained || 0;
+                        // Extract Max_Marks values first (before processing subjects)
+            if (data.subjects && Array.isArray(data.subjects)) {
+                // First scan specifically for Max_Marks fields
+                data.subjects.forEach(subject => {
+                    if (subject.name.includes('_Max_Marks')) {
+                        const parts = subject.name.split('_Max_Marks')[0].split('_');
+                        const baseSubjectName = parts[0]; // First part is subject name
                         
-                        // Store max marks for this component
-                        if (maxMarks > 0) {
-                            componentMaxMarks[componentName] = maxMarks;
-                            console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                        if (parts.length > 1) {
+                            // Extract component name (everything between subject name and _Max_Marks)
+                            const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
+                            const maxMarks = subject.obtained || 0;
+                            
+                            // Store max marks for this component
+                            if (maxMarks > 0) {
+                                componentMaxMarks[componentName] = maxMarks;
+                                console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                            }
                         }
                     }
-                }
-            });
+                });
             
             // First pass - identify all components and group subjects
                         data.subjects.forEach(subject => {
@@ -781,13 +785,8 @@
                                 
                                 // Handle if this is a Max_Marks column
                                 if (componentName.endsWith("_Max_Marks")) {
-                                    // Extract the base component name without _Max_Marks
-                                    const baseComponentName = componentName.replace("_Max_Marks", "");
-                                    const maxMarks = subject.obtained || 0;
-                                    componentMaxMarks[baseComponentName] = maxMarks;
-                                    
-                                    // Skip further processing for Max_Marks columns
-                                    return; 
+                                    // Skip Max_Marks columns as they're already processed
+                                    return;
                                 }
                                 
                                 // Create the subject group if it doesn't exist
@@ -1086,12 +1085,15 @@
                     }
                 }
                 
-                // Always add max marks in parentheses on a new line
+                // Always attempt to display max marks in parentheses on a new line
+                let maxMarkDisplay = '';
                 if (maxMarks) {
-                    componentHeader.innerHTML = formattedName + '<br><span class="component-weight">(' + maxMarks + ')</span>';
+                    maxMarkDisplay = `<br><span class="component-weight">(${maxMarks})</span>`;
                 } else {
-                    componentHeader.innerHTML = formattedName + '<br><span class="component-weight">&nbsp;</span>';
+                    maxMarkDisplay = `<br><span class="component-weight">&nbsp;</span>`;
                 }
+
+                componentHeader.innerHTML = formattedName + maxMarkDisplay;
                 
                 headerRow2.appendChild(componentHeader);
             });
