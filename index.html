@@ -129,6 +129,14 @@
             margin: 5px 0;
         }
         
+        /* Add responsive table wrapper */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 15px;
+        }
+        
         .subjects-table {
             width: 100%;
             border-collapse: collapse;
@@ -376,14 +384,16 @@
             }
         }
         
+        /* Enhanced mobile responsiveness */
         @media (max-width: 600px) {
             .container {
                 padding: 0;
                 border-radius: 0;
+                width: 100%;
             }
             
             .header h1 {
-                font-size: 20px;
+                font-size: 18px;
             }
             
             .student-info-item {
@@ -392,7 +402,8 @@
             }
             
             .student-info p strong {
-                width: 150px;
+                width: 100px;
+                display: inline-block;
             }
             
             .signature {
@@ -410,16 +421,64 @@
                 margin-left: 0;
             }
             
+            /* Enhanced table styling for mobile */
             .subjects-table {
                 font-size: 10px;
+                table-layout: fixed;
             }
             
             .subjects-table th, .subjects-table td {
-                padding: 3px;
+                padding: 4px 2px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            
+            /* Set specific widths for better layout on mobile */
+            .subjects-table th:first-child, 
+            .subjects-table td:first-child {
+                width: 20%;
+            }
+            
+            .subjects-table th.grade-header,
+            .subjects-table td:last-child {
+                width: 15%;
+            }
+            
+            .subjects-table th.total-header,
+            .subjects-table td:nth-last-child(2) {
+                width: 15%;
+            }
+            
+            .subjects-table th.component-header {
+                width: auto;
+                min-width: 40px;
+                max-width: 60px;
+            }
+            
+            /* Handle long component names better */
+            #detailedTableContainer th div {
+                font-size: 9px;
+                white-space: normal;
             }
             
             .component-weight {
                 font-size: 8px;
+                padding: 1px 2px;
+            }
+        }
+        
+        /* Even smaller screens */
+        @media (max-width: 350px) {
+            .subjects-table {
+                font-size: 8px;
+            }
+            
+            .subjects-table th, .subjects-table td {
+                padding: 2px 1px;
+            }
+            
+            #detailedTableContainer th div {
+                font-size: 7px;
             }
         }
         
@@ -625,33 +684,37 @@
                 <p><strong>Exam:</strong> <span id="examName">Final Term</span></p>
             </div>
             
-            <!-- Default table with simple columns (will be replaced with detailed one if needed) -->
+            <!-- Simple Table Container with responsive wrapper -->
             <div id="simpleTableContainer">
-                <table class="subjects-table" id="simpleTable">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th>Max Marks</th>
-                            <th>Marks Obtained</th>
-                            <th>Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="simpleTableBody">
-                        <!-- Subject marks will be inserted here -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="subjects-table" id="simpleTable">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Max Marks</th>
+                                <th>Marks Obtained</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="simpleTableBody">
+                            <!-- Subject marks will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
-            <!-- Detailed table with assessment components (initially hidden) -->
+            <!-- Detailed Table Container with responsive wrapper -->
             <div id="detailedTableContainer" style="display: none;">
-                <table class="subjects-table" id="detailedTable">
-                    <!-- Table headers will be created dynamically -->
-                    <thead id="detailedTableHead">
-                    </thead>
-                    <tbody id="detailedTableBody">
-                        <!-- Detailed subject marks will be inserted here -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="subjects-table" id="detailedTable">
+                        <!-- Table headers will be created dynamically -->
+                        <thead id="detailedTableHead">
+                        </thead>
+                        <tbody id="detailedTableBody">
+                            <!-- Detailed subject marks will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <div class="summary">
@@ -690,25 +753,25 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-            // Create an invisible debug div to help diagnose issues
-            const debugDiv = document.createElement('div');
-            debugDiv.id = 'debug-info';
-            debugDiv.style.display = 'none';
-            debugDiv.innerHTML = `
-                <h3>Debug Information</h3>
-                <pre id="debug-content"></pre>
-            `;
-            document.body.appendChild(debugDiv);
-            
-            // Helper function to add debug info
-            window.addDebug = (text) => {
-                const debugContent = document.getElementById('debug-content');
-                if (debugContent) {
-                    debugContent.textContent += text + '\n';
-                }
-            };
-            
-            // Track API response time to determine if server is "cold"
+        // Create an invisible debug div to help diagnose issues
+        const debugDiv = document.createElement('div');
+        debugDiv.id = 'debug-info';
+        debugDiv.style.display = 'none';
+        debugDiv.innerHTML = `
+            <h3>Debug Information</h3>
+            <pre id="debug-content"></pre>
+        `;
+        document.body.appendChild(debugDiv);
+        
+        // Helper function to add debug info
+        window.addDebug = (text) => {
+            const debugContent = document.getElementById('debug-content');
+            if (debugContent) {
+                debugContent.textContent += text + '\n';
+            }
+        };
+        
+        // Track API response time to determine if server is "cold"
         let apiResponseStart = 0;
         let isFirstFetch = true;
         let isServerCold = false;
@@ -1060,6 +1123,14 @@
             const resultStatus = document.getElementById('resultStatus');
             resultStatus.textContent = data.result;
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
+            
+            // Reset scroll position for mobile tables
+            if (window.innerWidth <= 600) {
+                const tableResponsive = document.querySelectorAll('.table-responsive');
+                tableResponsive.forEach(container => {
+                    container.scrollLeft = 0;
+                });
+            }
         }
 
         function createDetailedTableHeaders(activeComponents, componentMaxMarks) {
@@ -1077,7 +1148,7 @@
             
             // Components columns (colspan=activeComponents.length)
             const componentsHeader = document.createElement('th');
-            componentsHeader.textContent = 'Assessment Components';
+            componentsHeader.textContent = 'Assessment';
             componentsHeader.setAttribute('colspan', activeComponents.length);
             headerRow1.appendChild(componentsHeader);
             
@@ -1086,7 +1157,7 @@
             totalHeader.textContent = 'Total';
             totalHeader.setAttribute('rowspan', '2');
             totalHeader.className = "total-header";
-            totalHeader.innerHTML += '<br>(100)';
+            totalHeader.innerHTML = 'Total<br>(100)';
             headerRow1.appendChild(totalHeader);
             
             // Grade column (rowspan=2)
@@ -1101,8 +1172,6 @@
             
             // Add each active component as a column
             activeComponents.forEach(componentName => {
-                window.addDebug(`Processing component: ${componentName}`);
-                
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
                 
@@ -1117,32 +1186,38 @@
                     "Mid_Term": 40
                 };
 
+                // Create abbreviated component names for small screens
+                const abbreviations = {
+                    "Periodic_Test": "PT",
+                    "Notebook_Submission": "NB",
+                    "Subject_Enrichment": "SE",
+                    "Learner_Diary": "LD",
+                    "Mid_Term": "MT"
+                };
+                
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
+                
+                // Get short name if available or create one
+                let shortName = abbreviations[componentName] || displayName;
                 
                 // Get max marks with multiple fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Split long component names onto multiple lines
-                let formattedName = displayName;
-                
-                // If the name has spaces and is longer than 10 characters, split at space
-                if (displayName.includes(' ') && displayName.length > 10) {
-                    // Split at a space character, preferably near the middle
-                    const words = displayName.split(' ');
-                    if (words.length >= 2) {
-                        // If there are at least 2 words, join them with line breaks
-                        formattedName = words.join('<br>');
-                    }
+                // Create responsive header content with abbreviated names for small screens
+                if (window.innerWidth <= 600) {
+                    componentHeader.innerHTML = `
+                        <div style="margin:0; padding:0;">${shortName}</div>
+                        <div style="margin:2px 0; font-size:9px; color:#777;">(${finalMaxMarks})</div>
+                    `;
+                } else {
+                    componentHeader.innerHTML = `
+                        <div style="margin:0; padding:0;">${displayName}</div>
+                        <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
+                    `;
                 }
-                
-                // Use a simpler, more subtle style
-                componentHeader.innerHTML = `
-                    <div style="margin:0; padding:0;">${formattedName}</div>
-                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
-                `;
                 
                 headerRow2.appendChild(componentHeader);
             });
@@ -1277,6 +1352,24 @@
         document.getElementById('rollNumber').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 fetchResult();
+            }
+        });
+        
+        // Check screen size on load and resize
+        window.addEventListener('resize', function() {
+            // Update header display based on screen size
+            if (document.getElementById('detailedTableHead').innerHTML !== '') {
+                // If detailed table is populated, update headers
+                const activeComponents = [];
+                const componentHeaders = document.querySelectorAll('.component-header');
+                componentHeaders.forEach(header => {
+                    activeComponents.push(header.getAttribute('data-component'));
+                });
+                
+                // If we have active components data, refresh the headers
+                if (activeComponents.length > 0) {
+                    createDetailedTableHeaders(activeComponents, {});
+                }
             }
         });
     </script>
