@@ -1032,7 +1032,7 @@
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
                 
-                // Split long component names onto multiple lines and add max marks
+                // Split long component names onto multiple lines
                 let formattedName = displayName;
                 
                 // If the name has spaces and is longer than 12 characters, split at space
@@ -1045,9 +1045,9 @@
                     }
                 }
                 
-                // Add max marks in parentheses if available
+                // Add max marks in parentheses on a new line
                 if (maxMarks) {
-                    componentHeader.innerHTML = formattedName + ' <span class="component-weight">(' + maxMarks + ')</span>';
+                    componentHeader.innerHTML = formattedName + '<br><span class="component-weight">(' + maxMarks + ')</span>';
                 } else {
                     componentHeader.innerHTML = formattedName;
                 }
