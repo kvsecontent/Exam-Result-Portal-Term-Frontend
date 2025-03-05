@@ -1106,16 +1106,23 @@
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
                 
+                // Hardcode fallback max marks for standard components
+                const hardcodedMaxMarks = {
+                    "Periodic_Test": 10,
+                    "Notebook_Submission": 5,
+                    "Subject_Enrichment": 5, 
+                    "Learner_Diary": 20,
+                    "Oral": 20,
+                    "Mid_Term": 40
+                };
+
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
                 
-                // Get max marks for this component, if available
-                const maxMarks = componentMaxMarks[componentName] || '';
-                window.addDebug(`Component ${componentName} max marks from object: ${maxMarks}`);
-                
-                // Also check global fallback
-                const globalMaxMarks = window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null;
-                window.addDebug(`Component ${componentName} max marks from global: ${globalMaxMarks}`);
+                // Get max marks with multiple fallbacks
+                let finalMaxMarks = componentMaxMarks[componentName] || 
+                                   (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
+                                   hardcodedMaxMarks[componentName] || '';
                 
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
@@ -1130,19 +1137,11 @@
                     }
                 }
                 
-                // Always attempt to display max marks in parentheses on a new line
-                let finalMaxMarks = maxMarks || globalMaxMarks || '';
-                let maxMarkDisplay = '';
-                
-                if (finalMaxMarks) {
-                    // Use inline styles to ensure visibility
-                    maxMarkDisplay = `<br><span style="display:inline-block !important; font-size:11px; padding:1px 3px; color:#666; margin-top:4px; background-color:#f7f7f7; border-radius:3px;">(${finalMaxMarks})</span>`;
-                } else {
-                    maxMarkDisplay = `<br><span style="display:inline-block !important; font-size:11px; padding:0; color:#666; margin-top:4px;">&nbsp;</span>`;
-                }
-
-                componentHeader.innerHTML = formattedName + maxMarkDisplay;
-                window.addDebug(`Set component HTML: ${componentHeader.innerHTML}`);
+                // Use a div with strong styling that will definitely be visible
+                componentHeader.innerHTML = `
+                    <div style="margin:0; padding:0;">${formattedName}</div>
+                    <div style="margin:5px 0; padding:3px; background-color:#f0f0f0; border:1px solid #ccc; display:block !important; width:auto; text-align:center;">(${finalMaxMarks})</div>
+                `;
                 
                 headerRow2.appendChild(componentHeader);
             });
