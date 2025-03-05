@@ -1112,6 +1112,7 @@
                     "Notebook_Submission": 5,
                     "Subject_Enrichment": 5, 
                     "Learner_Diary": 20,
+                    "MDP": 20,
                     "Oral": 20,
                     "Mid_Term": 40
                 };
@@ -1122,7 +1123,7 @@
                 // Get max marks with multiple fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
-                                   hardcodedMaxMarks[componentName] || '';
+                                   hardcodedMaxMarks[componentName] || 0;
                 
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
@@ -1137,10 +1138,10 @@
                     }
                 }
                 
-                // Use a div with strong styling that will definitely be visible
+                // Use a simpler, more subtle style
                 componentHeader.innerHTML = `
                     <div style="margin:0; padding:0;">${formattedName}</div>
-                    <div style="margin:5px 0; padding:3px; background-color:#f0f0f0; border:1px solid #ccc; display:block !important; width:auto; text-align:center;">(${finalMaxMarks})</div>
+                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
                 `;
                 
                 headerRow2.appendChild(componentHeader);
