@@ -745,32 +745,33 @@
                     const groupedSubjects = {};
                     const mainSubjects = [];
                     
+                    // Extract Max_Marks values first (before processing subjects)
                     if (data.subjects && Array.isArray(data.subjects)) {
-                        // Extract Max_Marks values first (before processing subjects)
-            if (data.subjects && Array.isArray(data.subjects)) {
-                // First scan specifically for Max_Marks fields
-                data.subjects.forEach(subject => {
-                    if (subject.name.includes('_Max_Marks')) {
-                        const parts = subject.name.split('_Max_Marks')[0].split('_');
-                        const baseSubjectName = parts[0]; // First part is subject name
-                        
-                        if (parts.length > 1) {
-                            // Extract component name (everything between subject name and _Max_Marks)
-                            const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
-                            const maxMarks = subject.obtained || 0;
-                            
-                            // Store max marks for this component
-                            if (maxMarks > 0) {
-                                componentMaxMarks[componentName] = maxMarks;
-                                console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                        // First scan specifically for Max_Marks fields
+                        data.subjects.forEach(subject => {
+                            if (subject.name && subject.name.includes('_Max_Marks')) {
+                                const parts = subject.name.split('_Max_Marks')[0].split('_');
+                                const baseSubjectName = parts[0]; // First part is subject name
+                                
+                                if (parts.length > 1) {
+                                    // Extract component name (everything between subject name and _Max_Marks)
+                                    const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
+                                    const maxMarks = subject.obtained || 0;
+                                    
+                                    // Store max marks for this component
+                                    if (maxMarks > 0) {
+                                        componentMaxMarks[componentName] = maxMarks;
+                                        console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                                    }
+                                }
                             }
-                        }
-                    }
-                });
-            
-            // First pass - identify all components and group subjects
+                        });
+                        
+                        // Now process all subjects to build the groupedSubjects object
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
+                            if (!subject.name) return;
+                            
                             const parts = subject.name.split('_');
                             const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
                             
@@ -1064,13 +1065,13 @@
             // Add each active component as a column
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
+                componentHeader.className = "component-header";
+                
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
                 
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
-                
-                componentHeader.className = "component-header";
                 
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
