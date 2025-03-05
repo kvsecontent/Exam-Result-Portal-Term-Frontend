@@ -261,8 +261,12 @@
         .component-weight {
             font-size: 11px;
             color: #666;
-            display: inline-block; 
+            display: inline-block !important; 
             margin-top: 4px;
+            font-weight: normal;
+            background-color: #f7f7f7;
+            padding: 1px 3px;
+            border-radius: 3px;
         }
         
         /* Skeleton loading animation */
@@ -686,7 +690,25 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Track API response time to determine if server is "cold"
+            // Create an invisible debug div to help diagnose issues
+            const debugDiv = document.createElement('div');
+            debugDiv.id = 'debug-info';
+            debugDiv.style.display = 'none';
+            debugDiv.innerHTML = `
+                <h3>Debug Information</h3>
+                <pre id="debug-content"></pre>
+            `;
+            document.body.appendChild(debugDiv);
+            
+            // Helper function to add debug info
+            window.addDebug = (text) => {
+                const debugContent = document.getElementById('debug-content');
+                if (debugContent) {
+                    debugContent.textContent += text + '\n';
+                }
+            };
+            
+            // Track API response time to determine if server is "cold"
         let apiResponseStart = 0;
         let isFirstFetch = true;
         let isServerCold = false;
@@ -784,9 +806,24 @@
                                     componentName = componentName.replace("_Obtained", "");
                                 }
                                 
-                                // Handle if this is a Max_Marks column
-                                if (componentName.endsWith("_Max_Marks")) {
-                                    // Skip Max_Marks columns as they're already processed
+                                let baseComponentName;
+                                // Handle specially formatted fields like Hindi_Periodic_Test_Max_Marks
+                                if (subject.name.includes('_Max_Marks')) {
+                                    const fullName = subject.name;
+                                    const baseSubjectName = parts[0]; // e.g., Hindi
+                                    baseComponentName = fullName.substring(baseSubjectName.length + 1, fullName.length - 10); // "Periodic_Test"
+                                    
+                                    const maxMarks = subject.obtained || 0;
+                                    if (maxMarks > 0) {
+                                        // Store for debugging
+                                        window.allComponentMaxMarks = window.allComponentMaxMarks || {};
+                                        window.allComponentMaxMarks[baseComponentName] = maxMarks;
+                                        
+                                        componentMaxMarks[baseComponentName] = maxMarks;
+                                        console.log(`Found max marks for ${baseComponentName}: ${maxMarks}`);
+                                    }
+                                    
+                                    // Skip further processing
                                     return;
                                 }
                                 
@@ -1064,6 +1101,8 @@
             
             // Add each active component as a column
             activeComponents.forEach(componentName => {
+                window.addDebug(`Processing component: ${componentName}`);
+                
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
                 
@@ -1072,6 +1111,11 @@
                 
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
+                window.addDebug(`Component ${componentName} max marks from object: ${maxMarks}`);
+                
+                // Also check global fallback
+                const globalMaxMarks = window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null;
+                window.addDebug(`Component ${componentName} max marks from global: ${globalMaxMarks}`);
                 
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
@@ -1087,14 +1131,18 @@
                 }
                 
                 // Always attempt to display max marks in parentheses on a new line
+                let finalMaxMarks = maxMarks || globalMaxMarks || '';
                 let maxMarkDisplay = '';
-                if (maxMarks) {
-                    maxMarkDisplay = `<br><span class="component-weight">(${maxMarks})</span>`;
+                
+                if (finalMaxMarks) {
+                    // Use inline styles to ensure visibility
+                    maxMarkDisplay = `<br><span style="display:inline-block !important; font-size:11px; padding:1px 3px; color:#666; margin-top:4px; background-color:#f7f7f7; border-radius:3px;">(${finalMaxMarks})</span>`;
                 } else {
-                    maxMarkDisplay = `<br><span class="component-weight">&nbsp;</span>`;
+                    maxMarkDisplay = `<br><span style="display:inline-block !important; font-size:11px; padding:0; color:#666; margin-top:4px;">&nbsp;</span>`;
                 }
 
                 componentHeader.innerHTML = formattedName + maxMarkDisplay;
+                window.addDebug(`Set component HTML: ${componentHeader.innerHTML}`);
                 
                 headerRow2.appendChild(componentHeader);
             });
