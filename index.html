@@ -736,7 +736,11 @@
                             
                             // Only process if there's a component (parts > 1)
                             if (parts.length > 1) {
-                                const componentName = subject.name.substring(baseSubjectName.length + 1);
+                                let componentName = subject.name.substring(baseSubjectName.length + 1);
+                                
+                                // Check if component ends with "_Obtained" and remove it
+                                if (componentName.endsWith("_Obtained")) {
+                                    componentName = componentName.replace("_Obtained", "");
                                 
                                 // Create the subject group if it doesn't exist
                                 if (!groupedSubjects[baseSubjectName]) {
@@ -750,21 +754,42 @@
                                     };
                                 }
                                 
-                                // Extract max marks from subject data
+                                // Handle if this is a Max_Marks column
                                 let maxMarks = 0;
-                                if (subject.max_marks !== undefined && subject.max_marks !== null) {
+                                if (componentName.endsWith("_Max_Marks")) {
+                                    // Extract the base component name without _Max_Marks
+                                    const baseComponentName = componentName.replace("_Max_Marks", "");
+                                    maxMarks = subject.obtained || 0;
+                                    componentMaxMarks[baseComponentName] = maxMarks;
+                                    componentName = baseComponentName; // Use the base component name
+                                } else if (subject.max_marks !== undefined && subject.max_marks !== null) {
+                                    // Fallback to subject.max_marks if available
                                     maxMarks = subject.max_marks;
                                     componentMaxMarks[componentName] = maxMarks;
                                 }
                                 
                                 // Add the component to the subject and track it
                                 const marks = subject.obtained || 0;
-                                groupedSubjects[baseSubjectName].components[componentName] = {
-                                    marks: marks,
-                                    max_marks: maxMarks,
-                                    displayName: componentName.replace(/_/g, ' '),
-                                    weight: maxMarks // Use max_marks as weight
-                                };
+                                
+                                // Initialize the component if it doesn't exist
+                                if (!groupedSubjects[baseSubjectName].components[componentName]) {
+                                    groupedSubjects[baseSubjectName].components[componentName] = {
+                                        marks: marks,
+                                        max_marks: maxMarks,
+                                        displayName: componentName.replace(/_/g, ' '),
+                                        weight: maxMarks // Use max_marks as weight
+                                    };
+                                } else {
+                                    // Update marks if this is the Obtained value
+                                    if (subject.name.endsWith("_Obtained")) {
+                                        groupedSubjects[baseSubjectName].components[componentName].marks = marks;
+                                    }
+                                    // Update max_marks if this is the Max_Marks value
+                                    if (subject.name.endsWith("_Max_Marks")) {
+                                        groupedSubjects[baseSubjectName].components[componentName].max_marks = subject.obtained || 0;
+                                        componentMaxMarks[componentName] = subject.obtained || 0;
+                                    }
+                                }
                                 
                                 // If the component has marks > 0, add it to active components
                                 if (marks > 0) {
@@ -1019,10 +1044,9 @@
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
                 
-                // Display component name with max marks in parentheses
+                // Display component name with max marks in parentheses on the same line
                 if (maxMarks) {
-                    componentHeader.innerHTML = displayName + 
-                        '<br><span class="component-weight">(' + maxMarks + ')</span>';
+                    componentHeader.innerHTML = displayName + ' <span class="component-weight">(' + maxMarks + ')</span>';
                 } else {
                     componentHeader.innerHTML = displayName;
                 }
