@@ -63,6 +63,11 @@
             background-color: #303f9f;
         }
         
+        button:disabled {
+            background-color: #9fa8da;
+            cursor: not-allowed;
+        }
+        
         .result-card {
             display: none;
             padding: 15px;
@@ -242,6 +247,113 @@
             color: #666;
         }
         
+        /* Skeleton loading animation */
+        @keyframes shimmer {
+            0% {
+                background-position: -468px 0;
+            }
+            100% {
+                background-position: 468px 0;
+            }
+        }
+        
+        .skeleton {
+            background: #f6f7f8;
+            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 104px;
+            display: block;
+            border-radius: 4px;
+            position: relative;
+            animation-duration: 1.5s;
+            animation-fill-mode: forwards;
+            animation-iteration-count: infinite;
+            animation-name: shimmer;
+            animation-timing-function: linear;
+        }
+        
+        .skeleton-loader {
+            display: none;
+            padding: 15px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+        
+        .skeleton-line.title {
+            height: 24px;
+            width: 40%;
+            margin: 0 auto 15px auto;
+        }
+        
+        .skeleton-line.full {
+            width: 100%;
+        }
+        
+        .skeleton-line.medium {
+            width: 70%;
+        }
+        
+        .skeleton-line.short {
+            width: 50%;
+        }
+        
+        .skeleton-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .skeleton-table th, .skeleton-table td {
+            border: 1px solid #eee;
+            height: 30px;
+        }
+        
+        .loading-message {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #0d47a1;
+            font-size: 14px;
+        }
+        
+        .loading-message.error {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #b71c1c;
+        }
+        
+        .loading-message.success {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #1b5e20;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(63, 81, 181, 0.3);
+            border-radius: 50%;
+            border-top-color: #3f51b5;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
         @media (max-width: 600px) {
             .container {
                 padding: 0;
@@ -389,11 +501,80 @@
         
         <div class="search-section">
             <input type="text" id="rollNumber" placeholder="Enter 5 Digits Admission No.">
-            <button onclick="fetchResult()">Get Result</button>
+            <button id="searchButton" onclick="fetchResult()">Get Result</button>
         </div>
         
+        <!-- Loading Message Section -->
+        <div id="loadingMessage" class="loading-message">
+            <div class="spinner"></div>
+            <span id="loadingText">Please wait while we connect to the server. This might take a few seconds as the free tier service wakes up...</span>
+        </div>
+
         <div class="error-message" id="errorMessage">
             Student record not found. Please check the Enrollment number and try again.
+        </div>
+        
+        <!-- Skeleton Loader -->
+        <div id="skeletonLoader" class="skeleton-loader">
+            <div class="school-info">
+                <div class="skeleton skeleton-line title"></div>
+                <div class="skeleton skeleton-line short" style="margin: 0 auto;"></div>
+            </div>
+            
+            <div class="student-info">
+                <div class="student-info-item">
+                    <div class="skeleton skeleton-line full"></div>
+                    <div class="skeleton skeleton-line full"></div>
+                    <div class="skeleton skeleton-line full"></div>
+                </div>
+                <div class="student-info-item text-right">
+                    <div class="skeleton skeleton-line full"></div>
+                    <div class="skeleton skeleton-line full"></div>
+                    <div class="skeleton skeleton-line full"></div>
+                </div>
+            </div>
+            
+            <table class="skeleton-table">
+                <thead>
+                    <tr>
+                        <th><div class="skeleton"></div></th>
+                        <th><div class="skeleton"></div></th>
+                        <th><div class="skeleton"></div></th>
+                        <th><div class="skeleton"></div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                        <td><div class="skeleton"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <div style="flex: 1;">
+                    <div class="skeleton skeleton-line medium"></div>
+                    <div class="skeleton skeleton-line short"></div>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <div class="skeleton skeleton-line medium" style="margin: 0 auto;"></div>
+                    <div class="skeleton skeleton-line short" style="margin: 0 auto;"></div>
+                </div>
+            </div>
         </div>
         
         <div class="result-card" id="resultCard">
@@ -487,32 +668,60 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Common component names
-        const COMPONENT_NAMES = {
-            'Periodic_Test': { displayName: 'Periodic', weight: 10 },
-            'Notebook_Submission': { displayName: 'Notebook', weight: 5 },
-            'Subject_Enrichment': { displayName: 'Enrichment', weight: 5 },
-            'MDP': { displayName: 'MDP', weight: 20 },
-            'Oral_Test': { displayName: 'Oral', weight: 20 },
-            'MidTerm_Exam': { displayName: 'Mid-Term', weight: 40 },
-            'Learner_Diary': { displayName: 'Learner Diary', weight: 20 }
-        };
+        // Track API response time to determine if server is "cold"
+        let apiResponseStart = 0;
+        let isFirstFetch = true;
+        let isServerCold = false;
         
         // Flag to check if we need detailed view or not
         let useDetailedView = false;
         
         async function fetchDataFromBackend(rollNumber) {
             try {
+                // Start timing the API response
+                apiResponseStart = Date.now();
+                
+                // Show loading message
+                showLoadingMessage("Please wait while we fetch the results...");
+                
+                // Show skeleton loader after a short delay
+                setTimeout(() => {
+                    if (Date.now() - apiResponseStart > 300) { // If API hasn't responded in 300ms
+                        document.getElementById('skeletonLoader').style.display = 'block';
+                    }
+                }, 300);
+                
+                // After 3 seconds, if still loading, update message to inform about cold start
+                setTimeout(() => {
+                    if (Date.now() - apiResponseStart > 3000 && isFirstFetch) {
+                        isServerCold = true;
+                        showLoadingMessage("The server is warming up (first request may take 20-30 seconds). Please wait...");
+                    }
+                }, 3000);
+                
                 const url = `${API_BASE_URL}/api/student/${rollNumber}`;
                 const response = await fetch(url);
                 const result = await response.json();
                 
+                // Track that we've completed one fetch
+                isFirstFetch = false;
+                
+                // Hide the skeleton loader
+                document.getElementById('skeletonLoader').style.display = 'none';
+                
                 if (result.success) {
+                    // Update loading message to success
+                    if (isServerCold) {
+                        showSuccessMessage("Server is now active! Loading results...");
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Show success message briefly
+                    }
+                    
                     // Process the data
                     const data = result.data;
                     
-                    // Extract all active components for this student
+                    // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
+                    const componentMaxMarks = {};
                     
                     // Group subjects by their base name (before the underscore)
                     const groupedSubjects = {};
@@ -541,12 +750,20 @@
                                     };
                                 }
                                 
+                                // Extract max marks from subject data
+                                let maxMarks = 0;
+                                if (subject.max_marks !== undefined && subject.max_marks !== null) {
+                                    maxMarks = subject.max_marks;
+                                    componentMaxMarks[componentName] = maxMarks;
+                                }
+                                
                                 // Add the component to the subject and track it
                                 const marks = subject.obtained || 0;
                                 groupedSubjects[baseSubjectName].components[componentName] = {
                                     marks: marks,
-                                    displayName: COMPONENT_NAMES[componentName]?.displayName || componentName,
-                                    weight: COMPONENT_NAMES[componentName]?.weight || 0
+                                    max_marks: maxMarks,
+                                    displayName: componentName.replace(/_/g, ' '),
+                                    weight: maxMarks // Use max_marks as weight
                                 };
                                 
                                 // If the component has marks > 0, add it to active components
@@ -587,14 +804,68 @@
                     data.hasDetailedView = useDetailedView;
                     data.groupedSubjects = mainSubjects;
                     data.activeComponents = Array.from(activeComponents);
+                    data.componentMaxMarks = componentMaxMarks;
+                    
+                    // Hide loading message
+                    hideLoadingMessage();
                     
                     return data;
                 }
+                
+                // Hide loading message in case of non-success
+                hideLoadingMessage();
                 return null; // Student not found
             } catch (error) {
                 console.error('Error fetching data:', error);
+                
+                // Update loading message to error
+                showErrorMessage("Error connecting to the server. Please try again later.");
+                
+                // Hide the skeleton loader
+                document.getElementById('skeletonLoader').style.display = 'none';
+                
                 return null;
             }
+        }
+
+        function showLoadingMessage(message) {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const loadingText = document.getElementById('loadingText');
+            
+            loadingText.textContent = message;
+            loadingMessage.classList.remove('error', 'success');
+            loadingMessage.style.display = 'block';
+            
+            // Disable search button during loading
+            document.getElementById('searchButton').disabled = true;
+        }
+
+        function showErrorMessage(message) {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const loadingText = document.getElementById('loadingText');
+            
+            loadingText.textContent = message;
+            loadingMessage.classList.add('error');
+            loadingMessage.classList.remove('success');
+            loadingMessage.style.display = 'block';
+            
+            // Re-enable search button
+            document.getElementById('searchButton').disabled = false;
+        }
+
+        function showSuccessMessage(message) {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const loadingText = document.getElementById('loadingText');
+            
+            loadingText.textContent = message;
+            loadingMessage.classList.add('success');
+            loadingMessage.classList.remove('error');
+            loadingMessage.style.display = 'block';
+        }
+
+        function hideLoadingMessage() {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('searchButton').disabled = false;
         }
 
         function calculateGrade(marks) {
@@ -679,7 +950,7 @@
                 detailedTableContainer.style.display = 'block';
                 
                 // Create dynamic table headers based on active components
-                createDetailedTableHeaders(data.activeComponents);
+                createDetailedTableHeaders(data.activeComponents, data.componentMaxMarks);
                 
                 // Populate the detailed table
                 populateDetailedTable(data.groupedSubjects, data.activeComponents);
@@ -704,7 +975,7 @@
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
         }
 
-        function createDetailedTableHeaders(activeComponents) {
+        function createDetailedTableHeaders(activeComponents, componentMaxMarks) {
             const tableHead = document.getElementById('detailedTableHead');
             tableHead.innerHTML = '';
             
@@ -742,13 +1013,18 @@
             // Add each active component as a column
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
-                const displayInfo = COMPONENT_NAMES[componentName] || { displayName: componentName, weight: 0 };
+                // Get display name by replacing underscores with spaces
+                const displayName = componentName.replace(/_/g, ' ');
                 
-                componentHeader.innerHTML = displayInfo.displayName;
-                if (displayInfo.weight > 0) {
-                    componentHeader.innerHTML += '<br><span class="component-weight">(' + 
-                        (displayInfo.weight < 10 ? '0' + displayInfo.weight : displayInfo.weight) + 
-                        ')</span>';
+                // Get max marks for this component, if available
+                const maxMarks = componentMaxMarks[componentName] || '';
+                
+                // Display component name with max marks in parentheses
+                if (maxMarks) {
+                    componentHeader.innerHTML = displayName + 
+                        '<br><span class="component-weight">(' + maxMarks + ')</span>';
+                } else {
+                    componentHeader.innerHTML = displayName;
                 }
                 
                 headerRow2.appendChild(componentHeader);
