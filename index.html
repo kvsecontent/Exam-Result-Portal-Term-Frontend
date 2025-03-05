@@ -137,7 +137,7 @@
         }
         
         .subjects-table th, .subjects-table td {
-            border:, 1px solid #ddd;
+            border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
         }
@@ -1032,11 +1032,24 @@
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
                 
-                // Display component name with max marks in parentheses on the same line
+                // Split long component names onto multiple lines and add max marks
+                let formattedName = displayName;
+                
+                // If the name has spaces and is longer than 12 characters, split at space
+                if (displayName.includes(' ') && displayName.length > 12) {
+                    // Split at a space character, preferably near the middle
+                    const words = displayName.split(' ');
+                    if (words.length >= 2) {
+                        // If there are at least 2 words, join them with line breaks
+                        formattedName = words.join('<br>');
+                    }
+                }
+                
+                // Add max marks in parentheses if available
                 if (maxMarks) {
-                    componentHeader.innerHTML = displayName + ' <span class="component-weight">(' + maxMarks + ')</span>';
+                    componentHeader.innerHTML = formattedName + ' <span class="component-weight">(' + maxMarks + ')</span>';
                 } else {
-                    componentHeader.innerHTML = displayName;
+                    componentHeader.innerHTML = formattedName;
                 }
                 
                 headerRow2.appendChild(componentHeader);
