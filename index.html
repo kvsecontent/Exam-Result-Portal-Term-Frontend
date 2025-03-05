@@ -140,6 +140,23 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
+            width: auto;
+        }
+        
+        /* Make all component columns equal width */
+        .subjects-table th.component-header {
+            width: 80px; /* Fixed width for components */
+            min-width: 80px;
+            max-width: 100px;
+        }
+        
+        .subjects-table th:first-child { /* Subject column */
+            width: 120px;
+        }
+        
+        .subjects-table th.total-header, 
+        .subjects-table th.grade-header {
+            width: 60px;
         }
         
         .subjects-table th {
@@ -727,7 +744,27 @@
                     const mainSubjects = [];
                     
                     if (data.subjects && Array.isArray(data.subjects)) {
-                        // First pass - identify all components and group subjects
+                        // Check if we're dealing with Periodic_Test_Max_Marks or just Max_Marks
+            data.subjects.forEach(subject => {
+                if (subject.name.endsWith('_Max_Marks')) {
+                    const parts = subject.name.split('_Max_Marks')[0].split('_');
+                    const baseSubjectName = parts[0]; // First part is subject name
+                    
+                    if (parts.length > 1) {
+                        // Extract component name (everything between subject name and _Max_Marks)
+                        const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
+                        const maxMarks = subject.obtained || 0;
+                        
+                        // Store max marks for this component
+                        if (maxMarks > 0) {
+                            componentMaxMarks[componentName] = maxMarks;
+                            console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                        }
+                    }
+                }
+            });
+            
+            // First pass - identify all components and group subjects
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
                             const parts = subject.name.split('_');
@@ -1011,6 +1048,7 @@
             const totalHeader = document.createElement('th');
             totalHeader.textContent = 'Total';
             totalHeader.setAttribute('rowspan', '2');
+            totalHeader.className = "total-header";
             totalHeader.innerHTML += '<br>(100)';
             headerRow1.appendChild(totalHeader);
             
@@ -1018,6 +1056,7 @@
             const gradeHeader = document.createElement('th');
             gradeHeader.textContent = 'Grade';
             gradeHeader.setAttribute('rowspan', '2');
+            gradeHeader.className = "grade-header";
             headerRow1.appendChild(gradeHeader);
             
             // Create second header row for component names
@@ -1032,11 +1071,13 @@
                 // Get max marks for this component, if available
                 const maxMarks = componentMaxMarks[componentName] || '';
                 
+                componentHeader.className = "component-header";
+                
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
                 
-                // If the name has spaces and is longer than 12 characters, split at space
-                if (displayName.includes(' ') && displayName.length > 12) {
+                // If the name has spaces and is longer than 10 characters, split at space
+                if (displayName.includes(' ') && displayName.length > 10) {
                     // Split at a space character, preferably near the middle
                     const words = displayName.split(' ');
                     if (words.length >= 2) {
@@ -1045,11 +1086,11 @@
                     }
                 }
                 
-                // Add max marks in parentheses on a new line
+                // Always add max marks in parentheses on a new line
                 if (maxMarks) {
                     componentHeader.innerHTML = formattedName + '<br><span class="component-weight">(' + maxMarks + ')</span>';
                 } else {
-                    componentHeader.innerHTML = formattedName;
+                    componentHeader.innerHTML = formattedName + '<br><span class="component-weight">&nbsp;</span>';
                 }
                 
                 headerRow2.appendChild(componentHeader);
