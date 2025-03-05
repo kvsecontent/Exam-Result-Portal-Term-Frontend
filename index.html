@@ -235,68 +235,11 @@
             text-align: center;
             margin: 0 auto;
         }
-
-        /* Added styles for subject components that better match original aesthetic */
-        .component-list {
-            padding-left: 20px;
-            margin: 3px 0;
-            font-size: 12px;
-            color: #555;
-            border-left: 3px solid #eee;
-        }
         
-        .component-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2px;
-            padding: 2px 0;
-        }
-        
-        .component-name {
-            flex: 3;
-            padding-right: 10px;
-        }
-        
-        .component-marks {
-            flex: 1;
-            text-align: right;
-            font-weight: normal;
-        }
-        
-        /* Table responsive styling for mobile */
-        #detailedTableContainer {
-            width: 100%;
-            overflow-x: auto;
-            position: relative;
-        }
-        
-        #detailedTableContainer::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 5px;
-            background: linear-gradient(to right, transparent, rgba(0,0,0,0.1));
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        #detailedTableContainer.has-overflow::after {
-            opacity: 1;
-        }
-        
-        #detailedTable {
-            min-width: 100%;
-            width: max-content;
-        }
-        
-        .subjects-table th, .subjects-table td {
-            min-width: 60px;
-            max-width: 120px;
-            white-space: normal;
-            word-wrap: break-word;
+        .component-weight {
+            font-size: 11px;
+            display: block;
+            color: #666;
         }
         
         @media (max-width: 600px) {
@@ -339,33 +282,10 @@
             
             .subjects-table th, .subjects-table td {
                 padding: 3px;
-                min-width: 50px;
             }
             
             .component-weight {
                 font-size: 8px;
-            }
-            
-            /* Show swipe hint on mobile */
-            .swipe-hint {
-                display: block;
-            }
-            
-            /* Adjust detailed table on mobile */
-            #detailedTable th, #detailedTable td {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 80px;
-            }
-            
-            #detailedTable th:first-child, 
-            #detailedTable td:first-child {
-                position: sticky;
-                left: 0;
-                background-color: #fff;
-                z-index: 1;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             }
         }
         
@@ -521,7 +441,6 @@
             
             <!-- Detailed table with assessment components (initially hidden) -->
             <div id="detailedTableContainer" style="display: none;">
-                <div class="swipe-hint">← Swipe to see more columns →</div>
                 <table class="subjects-table" id="detailedTable">
                     <!-- Table headers will be created dynamically -->
                     <thead id="detailedTableHead">
@@ -565,253 +484,31 @@
     </div>
 
     <script>
-        // Correct API URL
-        const API_BASE_URL = 'https://term-exam-result-api.onrender.com'; 
+        // Replace with your backend API URL
+        const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Google Sheets API settings - replace with your actual values
-        const GOOGLE_SHEET_ID = 'YOUR_GOOGLE_SHEET_ID';
-        const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';
+        // Common component names
+        const COMPONENT_NAMES = {
+            'Periodic_Test': { displayName: 'Periodic', weight: 10 },
+            'Notebook_Submission': { displayName: 'Notebook', weight: 5 },
+            'Subject_Enrichment': { displayName: 'Enrichment', weight: 5 },
+            'MDP': { displayName: 'MDP', weight: 20 },
+            'Oral_Test': { displayName: 'Oral', weight: 20 },
+            'MidTerm_Exam': { displayName: 'Mid-Term', weight: 40 },
+            'Learner_Diary': { displayName: 'Learner Diary', weight: 20 }
+        };
         
-        // All data is in Sheet2
-        const SHEET_RANGE = 'Sheet2!A:Z'; // Using A:Z to capture all columns
-
-        // Instead of using a predefined list, we'll dynamically detect components
-        // by their naming pattern and fetch from Google Sheets
-
-        // Store the data globally
-        let studentData = {};
-        
-        // Flag to check if we need detailed view
+        // Flag to check if we need detailed view or not
         let useDetailedView = false;
         
-        // Default school configuration
-        const schoolConfig = {
-            SchoolName: 'Kendriya Vidyalaya',
-            ExamName: 'Term Examination',
-            PassingPercentage: 33,
-            GradeAMin: 90,
-            GradeBMin: 80,
-            GradeCMin: 70,
-            GradeDMin: 60,
-            GradeEMin: 50
-        };
-
-        // Load data when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Application initialized');
-        });
-        
-        // Fetch student data from Google Sheets with wide format structure
-        async function fetchStudentDataFromGoogleSheet(rollNumber) {
-            try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${SHEET_RANGE}?key=${GOOGLE_API_KEY}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    console.error('Failed to fetch student data from Google Sheets:', response.statusText);
-                    return null;
-                }
-                
-                const result = await response.json();
-                
-                if (!result.values || result.values.length === 0) {
-                    console.error('No data found in Google Sheet');
-                    return null;
-                }
-                
-                // Get headers from first row - these will include Subject_Component_Obtained and Subject_Component_Max_Marks
-                const headers = result.values[0];
-                
-                // Find the row for this student
-                const studentRow = result.values.slice(1).find(row => 
-                    row.length > 0 && row[2] === rollNumber // Roll number is in column C (index 2)
-                );
-                
-                if (!studentRow) {
-                    console.log('No data found for student:', rollNumber);
-                    return null;
-                }
-                
-                // Basic student info is in the first 8 columns
-                const studentInfo = {
-                    school: studentRow[0] || schoolConfig.SchoolName, // School name (Col A)
-                    examName: studentRow[1] || schoolConfig.ExamName, // Exam name (Col B)
-                    rollNumber: studentRow[2], // Roll number (Col C)
-                    name: studentRow[3] || 'Unknown', // Student name (Col D)
-                    dob: studentRow[4] || '', // DOB (Col E)
-                    fatherName: studentRow[5] || '', // Father name (Col F)
-                    motherName: studentRow[6] || '', // Mother name (Col G)
-                    class: studentRow[7] || 'Unknown', // Class (Col H)
-                    subjects: []
-                };
-                
-                // Track active components for this student
-                const activeComponents = new Set();
-                
-                // Process subject component columns (starting from column I, index 8)
-                // Group subjects by their base name 
-                const groupedSubjects = {};
-                
-                for (let i = 8; i < headers.length; i++) {
-                    const columnHeader = headers[i];
-                    
-                    // Skip empty headers
-                    if (!columnHeader) continue;
-                    
-                    // Check if this is an "Obtained" column by looking for "_Obtained" suffix
-                    if (columnHeader.endsWith('_Obtained')) {
-                        // Extract subject and component from header
-                        // Format is Subject_Component_Obtained
-                        const parts = columnHeader.split('_');
-                        if (parts.length < 3) continue; // Skip if format is incorrect
-                        
-                        // Remove "_Obtained" from the end
-                        parts.pop();
-                        
-                        // Last part is the component, everything before is the subject
-                        const componentName = parts.pop();
-                        const subjectName = parts.join('_');
-                        
-                        // Look for corresponding Max_Marks column (should be the next column)
-                        const maxMarksHeader = headers[i + 1];
-                        if (maxMarksHeader && maxMarksHeader === `${subjectName}_${componentName}_Max_Marks`) {
-                            // Get the obtained and max marks values
-                            const obtained = parseFloat(studentRow[i]) || 0;
-                            const maxMarks = parseFloat(studentRow[i + 1]) || 100;
-                            
-                            // Only add component if it has data (obtained > 0)
-                            if (obtained > 0) {
-                                // Initialize subject if not already done
-                                if (!groupedSubjects[subjectName]) {
-                                    groupedSubjects[subjectName] = {
-                                        name: subjectName,
-                                        maxMarks: 100,
-                                        obtained: 0,
-                                        components: {},
-                                        hasData: false
-                                    };
-                                }
-                                
-                                // Add component to subject
-                                groupedSubjects[subjectName].components[componentName] = {
-                                    marks: obtained,
-                                    displayName: COMPONENT_NAMES[componentName]?.displayName || componentName,
-                                    weight: COMPONENT_NAMES[componentName]?.weight || maxMarks
-                                };
-                                
-                                // Add to active components
-                                activeComponents.add(componentName);
-                                groupedSubjects[subjectName].hasData = true;
-                                
-                                // Add to total obtained for this subject
-                                groupedSubjects[subjectName].obtained += obtained;
-                            }
-                        }
-                    }
-                }
-                
-                // Calculate grades and prepare subjects array
-                const mainSubjects = [];
-                
-                for (const subjectName in groupedSubjects) {
-                    const subject = groupedSubjects[subjectName];
-                    
-                    // Calculate grade
-                    subject.grade = calculateGrade(subject.obtained);
-                    
-                    // Only add subjects with data
-                    if (subject.hasData) {
-                        mainSubjects.push(subject);
-                    }
-                }
-                
-                // Check if any subjects have component data to determine table view
-                useDetailedView = mainSubjects.length > 0 && activeComponents.size > 0;
-                
-                // Calculate totals
-                let totalObtained = 0;
-                let totalMaxMarks = mainSubjects.length * 100; // Each subject has max 100
-                
-                mainSubjects.forEach(subject => {
-                    totalObtained += subject.obtained;
-                });
-                
-                const percentage = totalMaxMarks > 0 ? 
-                    ((totalObtained / totalMaxMarks) * 100).toFixed(2) : 0;
-                
-                // Calculate CGPA (assuming 10-point scale)
-                const cgpa = (percentage / 10).toFixed(1);
-                
-                // Determine pass/fail (default passing is 33%)
-                const passingPercentage = parseFloat(schoolConfig.PassingPercentage) || 33;
-                const result = percentage >= passingPercentage ? 'PASS' : 'FAIL';
-                
-                // Add calculated data to student info
-                studentInfo.totalObtained = totalObtained;
-                studentInfo.totalMarks = totalMaxMarks;
-                studentInfo.percentage = percentage;
-                studentInfo.cgpa = cgpa;
-                studentInfo.result = result;
-                studentInfo.hasDetailedView = useDetailedView;
-                studentInfo.groupedSubjects = mainSubjects;
-                studentInfo.activeComponents = Array.from(activeComponents);
-                
-                return studentInfo;
-            } catch (error) {
-                console.error('Error fetching student data from Google Sheets:', error);
-                return null;
-            }
-        }
-        
-        // Calculate total marks, percentage and result
-        function calculateTotals(data) {
-            if (!data.processedSubjects || !Array.isArray(data.processedSubjects)) {
-                return;
-            }
-            
-            let totalObtained = 0;
-            let totalMaxMarks = 0;
-            
-            data.processedSubjects.forEach(subject => {
-                totalObtained += subject.obtained;
-                totalMaxMarks += subject.maxMarks;
-            });
-            
-            const percentage = totalMaxMarks > 0 ? 
-                ((totalObtained / totalMaxMarks) * 100).toFixed(2) : 0;
-            
-            // Calculate CGPA (assuming 10-point scale)
-            const cgpa = (percentage / 10).toFixed(1);
-            
-            // Determine pass/fail (default passing is 33%)
-            const passingPercentage = parseFloat(schoolConfig.PassingPercentage) || 33;
-            const result = percentage >= passingPercentage ? 'PASS' : 'FAIL';
-            
-            // Add totals to data
-            data.totalObtained = totalObtained;
-            data.totalMarks = totalMaxMarks;
-            data.percentage = percentage;
-            data.cgpa = cgpa;
-            data.result = result;
-        }
-
-        // Try to fetch data from Google Sheets first, fall back to API if needed
-        async function fetchStudentData(rollNumber) {
-            // Try Google Sheets first
-            const googleData = await fetchStudentDataFromGoogleSheet(rollNumber);
-            if (googleData) {
-                return googleData;
-            }
-            
-            // Fall back to original API if Google Sheets data not found
-            console.log("Student not found in Google Sheets, trying API...");
+        async function fetchDataFromBackend(rollNumber) {
             try {
                 const url = `${API_BASE_URL}/api/student/${rollNumber}`;
                 const response = await fetch(url);
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Process the data using the same approach as the original code
+                    // Process the data
                     const data = result.data;
                     
                     // Extract all active components for this student
@@ -856,22 +553,34 @@
                                 if (marks > 0) {
                                     activeComponents.add(componentName);
                                     groupedSubjects[baseSubjectName].hasData = true;
-                                    groupedSubjects[baseSubjectName].obtained += marks;
                                 }
                             }
                         });
                         
-                        // Calculate grades for each subject
+                        // Calculate total marks and grades for each subject
                         for (const baseSubjectName in groupedSubjects) {
                             const subject = groupedSubjects[baseSubjectName];
+                            let totalMarks = 0;
+                            
+                            // Sum up all component marks
+                            for (const componentName in subject.components) {
+                                totalMarks += subject.components[componentName].marks;
+                            }
+                            
+                            // Update the subject's total marks and grade
+                            subject.obtained = totalMarks;
+                            subject.grade = calculateGrade(totalMarks);
+                            
+                            // Only add subjects with data
                             if (subject.hasData) {
-                                subject.grade = calculateGrade(subject.obtained);
                                 mainSubjects.push(subject);
                             }
                         }
                         
                         // Check if any subjects have component data
-                        useDetailedView = mainSubjects.length > 0 && activeComponents.size > 0;
+                        if (mainSubjects.length > 0 && activeComponents.size > 0) {
+                            useDetailedView = true;
+                        }
                     }
                     
                     // Add processed data to the result
@@ -879,44 +588,22 @@
                     data.groupedSubjects = mainSubjects;
                     data.activeComponents = Array.from(activeComponents);
                     
-                    // Ensure basic fields are present
-                    if (!data.school) {
-                        data.school = schoolConfig.SchoolName;
-                    }
-                    
-                    if (!data.examName) {
-                        data.examName = schoolConfig.ExamName;
-                    }
-                    
                     return data;
                 }
                 return null; // Student not found
             } catch (error) {
-                console.error('Error fetching data from API:', error);
+                console.error('Error fetching data:', error);
                 return null;
             }
         }
 
         function calculateGrade(marks) {
-            const gradeA = parseFloat(schoolConfig.GradeAMin) || 90;
-            const gradeB = parseFloat(schoolConfig.GradeBMin) || 80;
-            const gradeC = parseFloat(schoolConfig.GradeCMin) || 70;
-            const gradeD = parseFloat(schoolConfig.GradeDMin) || 60;
-            const gradeE = parseFloat(schoolConfig.GradeEMin) || 50;
-            
-            if (marks >= gradeA) return 'A';
-            else if (marks >= gradeB) return 'B';
-            else if (marks >= gradeC) return 'C';
-            else if (marks >= gradeD) return 'D';
-            else if (marks >= gradeE) return 'E';
+            if (marks >= 90) return 'A';
+            else if (marks >= 80) return 'B';
+            else if (marks >= 70) return 'C';
+            else if (marks >= 60) return 'D';
+            else if (marks >= 50) return 'E';
             else return 'F';
-        }
-        
-        function getGradeClass(grade) {
-            // Extract the base grade letter (A, B, C, D, E, F) from the grade
-            // This handles grades with + symbols like A+, B+, etc.
-            const baseGrade = grade.charAt(0);
-            return `grade-${baseGrade}`;
         }
 
         function getGradeClass(grade) {
@@ -933,14 +620,14 @@
             document.getElementById('studentClass').textContent = data.class;
             document.getElementById('examYear').textContent = "2024-25";
             document.getElementById('schoolName').textContent = data.school;
-            document.getElementById('examName').textContent = data.examName;
+            document.getElementById('examName').textContent = data.examName; // Use the exam name from the backend
             
             // Set new fields
             document.getElementById('studentDOB').textContent = data.dob;
             document.getElementById('fatherName').textContent = data.fatherName;
             document.getElementById('motherName').textContent = data.motherName;
             
-            // Handle the signature image
+            // Handle the signature image - improved version with pre-checking
             const signatureImg = document.getElementById('examInchargeSignature');
             
             // Function to check if image exists and display it
@@ -982,16 +669,102 @@
             // Call the function to handle signatures
             handleSignature();
             
-            // Clear previous table rows
-            const tableBody = document.getElementById('marksTableBody');
+            // Decide which table to show based on available data
+            const simpleTableContainer = document.getElementById('simpleTableContainer');
+            const detailedTableContainer = document.getElementById('detailedTableContainer');
+            
+            if (data.hasDetailedView) {
+                // Show the detailed table and hide the simple one
+                simpleTableContainer.style.display = 'none';
+                detailedTableContainer.style.display = 'block';
+                
+                // Create dynamic table headers based on active components
+                createDetailedTableHeaders(data.activeComponents);
+                
+                // Populate the detailed table
+                populateDetailedTable(data.groupedSubjects, data.activeComponents);
+            } else {
+                // Show the simple table and hide the detailed one
+                simpleTableContainer.style.display = 'block';
+                detailedTableContainer.style.display = 'none';
+                
+                // Populate the simple table
+                populateSimpleTable(data.groupedSubjects);
+            }
+            
+            // Set summary information
+            document.getElementById('totalObtained').textContent = data.totalObtained;
+            document.getElementById('totalMax').textContent = data.totalMarks;
+            document.getElementById('percentage').textContent = data.percentage;
+            document.getElementById('cgpa').textContent = data.cgpa;
+            
+            // Set result
+            const resultStatus = document.getElementById('resultStatus');
+            resultStatus.textContent = data.result;
+            resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
+        }
+
+        function createDetailedTableHeaders(activeComponents) {
+            const tableHead = document.getElementById('detailedTableHead');
+            tableHead.innerHTML = '';
+            
+            // Create first header row
+            const headerRow1 = document.createElement('tr');
+            
+            // Subject column (rowspan=2)
+            const subjectHeader = document.createElement('th');
+            subjectHeader.textContent = 'Subject';
+            subjectHeader.setAttribute('rowspan', '2');
+            headerRow1.appendChild(subjectHeader);
+            
+            // Components columns (colspan=activeComponents.length)
+            const componentsHeader = document.createElement('th');
+            componentsHeader.textContent = 'Assessment Components';
+            componentsHeader.setAttribute('colspan', activeComponents.length);
+            headerRow1.appendChild(componentsHeader);
+            
+            // Total column (rowspan=2)
+            const totalHeader = document.createElement('th');
+            totalHeader.textContent = 'Total';
+            totalHeader.setAttribute('rowspan', '2');
+            totalHeader.innerHTML += '<br>(100)';
+            headerRow1.appendChild(totalHeader);
+            
+            // Grade column (rowspan=2)
+            const gradeHeader = document.createElement('th');
+            gradeHeader.textContent = 'Grade';
+            gradeHeader.setAttribute('rowspan', '2');
+            headerRow1.appendChild(gradeHeader);
+            
+            // Create second header row for component names
+            const headerRow2 = document.createElement('tr');
+            
+            // Add each active component as a column
+            activeComponents.forEach(componentName => {
+                const componentHeader = document.createElement('th');
+                const displayInfo = COMPONENT_NAMES[componentName] || { displayName: componentName, weight: 0 };
+                
+                componentHeader.innerHTML = displayInfo.displayName;
+                if (displayInfo.weight > 0) {
+                    componentHeader.innerHTML += '<br><span class="component-weight">(' + 
+                        (displayInfo.weight < 10 ? '0' + displayInfo.weight : displayInfo.weight) + 
+                        ')</span>';
+                }
+                
+                headerRow2.appendChild(componentHeader);
+            });
+            
+            // Add headers to the table
+            tableHead.appendChild(headerRow1);
+            tableHead.appendChild(headerRow2);
+        }
+
+        function populateSimpleTable(subjects) {
+            const tableBody = document.getElementById('simpleTableBody');
             tableBody.innerHTML = '';
             
-            // Use the processed subjects if available, otherwise use the original subjects
-            const subjectsToDisplay = data.processedSubjects || data.subjects;
-            
-            // Add subject rows with components
-            subjectsToDisplay.forEach(subject => {
-                // Create main subject row
+            // Add subject rows to the simple table
+            subjects.forEach(subject => {
                 const row = document.createElement('tr');
                 
                 const nameCell = document.createElement('td');
@@ -1001,7 +774,7 @@
                 maxMarksCell.textContent = subject.maxMarks;
                 
                 const obtainedCell = document.createElement('td');
-                obtainedCell.textContent = subject.obtained;
+                obtainedCell.textContent = subject.obtained || '0';
                 
                 const gradeCell = document.createElement('td');
                 gradeCell.textContent = subject.grade;
@@ -1013,58 +786,48 @@
                 row.appendChild(gradeCell);
                 
                 tableBody.appendChild(row);
-                
-                // If subject has components, add them as nested items
-                if (subject.components && subject.components.length > 0) {
-                    // Create a row for components
-                    const componentsRow = document.createElement('tr');
-                    const componentsCell = document.createElement('td');
-                    componentsCell.colSpan = 4;
-                    componentsCell.style.padding = '0 8px 8px 8px'; // Less padding to compact the display
-                    componentsCell.style.borderTop = 'none'; // Remove top border for cleaner look
-                    
-                    const componentList = document.createElement('div');
-                    componentList.className = 'component-list';
-                    
-                    // Add each component
-                    subject.components.forEach(component => {
-                        const componentItem = document.createElement('div');
-                        componentItem.className = 'component-item';
-                        
-                        // Get the custom display name from our dictionary, or format nicely if not found
-                        let displayName = window.componentDisplayNames[component.componentType] || 
-                                         component.componentType.replace(/_/g, ' ');
-                        
-                        const componentNameSpan = document.createElement('span');
-                        componentNameSpan.className = 'component-name';
-                        componentNameSpan.textContent = displayName;
-                        
-                        const componentMarksSpan = document.createElement('span');
-                        componentMarksSpan.className = 'component-marks';
-                        // Format: marks (weightage)
-                        componentMarksSpan.innerHTML = `${component.marks} <span class="component-weightage">(${component.weightage})</span>`;
-                        
-                        componentItem.appendChild(componentNameSpan);
-                        componentItem.appendChild(componentMarksSpan);
-                        componentList.appendChild(componentItem);
-                    });
-                    
-                    componentsCell.appendChild(componentList);
-                    componentsRow.appendChild(componentsCell);
-                    tableBody.appendChild(componentsRow);
-                }
             });
+        }
+
+        function populateDetailedTable(subjects, activeComponents) {
+            const tableBody = document.getElementById('detailedTableBody');
+            tableBody.innerHTML = '';
             
-            // Set summary information
-            document.getElementById('totalObtained').textContent = data.totalObtained;
-            document.getElementById('totalMax').textContent = data.totalMarks;
-            document.getElementById('percentage').textContent = data.percentage;
-            document.getElementById('cgpa').textContent = data.cgpa;
-            
-            // Set result
-            const resultStatus = document.getElementById('resultStatus');
-            resultStatus.textContent = data.result;
-            resultStatus.className = data.result === 'PASS' ? 'pass' : 'fail';
+            // Add subject rows to the detailed table
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                
+                // Add subject name
+                const nameCell = document.createElement('td');
+                nameCell.textContent = subject.name;
+                row.appendChild(nameCell);
+                
+                // Add cells for each active component
+                activeComponents.forEach(componentName => {
+                    const cell = document.createElement('td');
+                    
+                    if (subject.components && subject.components[componentName]) {
+                        cell.textContent = subject.components[componentName].marks;
+                    } else {
+                        cell.textContent = '-';
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                // Add total cell
+                const totalCell = document.createElement('td');
+                totalCell.textContent = subject.obtained || '0';
+                row.appendChild(totalCell);
+                
+                // Add grade cell
+                const gradeCell = document.createElement('td');
+                gradeCell.textContent = subject.grade;
+                gradeCell.className = getGradeClass(subject.grade);
+                row.appendChild(gradeCell);
+                
+                tableBody.appendChild(row);
+            });
         }
 
         function fetchResult() {
@@ -1087,7 +850,7 @@
             }
             
             // Fetch data from backend
-            fetchStudentData(rollNumber).then(data => {
+            fetchDataFromBackend(rollNumber).then(data => {
                 if (data) {
                     displayResult(data, rollNumber);
                     resultCard.style.display = 'block';
