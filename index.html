@@ -155,32 +155,28 @@
         .subjects-table th.component-header {
             width: 45px; /* Fixed width for all components */
             min-width: 45px;
-            max-width: 50px;
-            padding: 4px 2px;
+            max-width: 60px;
+            padding: 2px;
             text-align: center;
             font-size: 12px;
-            vertical-align: top; /* Align all headers to top */
-            height: 60px; /* Fixed height for all component header cells */
+            vertical-align: middle;
         }
-
-        /* Component name container */
+        
+        /* Component name display */
         .component-name {
             display: block;
-            min-height: 30px; /* Fixed minimum height */
-            width: 100%;
+            font-weight: bold;
+            margin-bottom: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 4px;
         }
-
+        
         /* Keep max marks numbers on same line as parentheses */
         .max-marks {
             white-space: nowrap;
-            display: inline-block;
+            display: block;
             font-size: 11px;
             color: #666;
-            margin-top: 3px;
-            text-align: center;
             font-weight: normal;
         }
         
@@ -476,23 +472,16 @@
             }
             
             .subjects-table th.component-header {
-                padding: 3px 1px;
+                padding: 2px 1px;
                 font-size: 10px;
-                height: 50px; /* Smaller height for mobile */
             }
             
             .component-name {
-                min-height: 20px;
+                margin-bottom: 0;
             }
             
             .max-marks {
-                font-size: 9px;
-            }
-            
-            /* Handle long component names better */
-            #detailedTableContainer th div {
-                font-size: 9px;
-                white-space: normal;
+                font-size: 8px;
             }
             
             .component-weight {
@@ -511,7 +500,7 @@
                 padding: 2px 1px;
             }
             
-            #detailedTableContainer th div {
+            .subjects-table th.component-header {
                 font-size: 7px;
             }
         }
@@ -617,15 +606,6 @@
             
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
-            
-            /* Override mobile abbreviations in print mode */
-            .short-name {
-                display: none !important;
-            }
-            
-            .full-name {
-                display: block !important;
-            }
             
             /* Adjust sizes for better fit */
             .subjects-table th, .subjects-table td {
@@ -1243,9 +1223,6 @@
             resultStatus.textContent = data.result;
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
             
-            // Update responsive display
-            updateResponsiveDisplay();
-            
             // Reset scroll position for mobile tables
             if (window.innerWidth <= 600) {
                 const tableResponsive = document.querySelectorAll('.table-responsive');
@@ -1292,17 +1269,8 @@
             // Create second header row for component names
             const headerRow2 = document.createElement('tr');
             
-            // Create shorter version of long component names to prevent overflow
-            const betterAbbreviations = {
-                "Periodic_Test": "Periodic<br>Test",
-                "Notebook_Submission": "Notebook<br>Submission",
-                "Subject_Enrichment": "Subject<br>Enrichment",
-                "Learner_Diary": "Learner<br>Diary",
-                "Mid_Term": "Mid<br>Term"
-            };
-
-            // Create abbreviated component names for small screens
-            const mobileAbbreviations = {
+            // Abbreviations for component display (matching the screenshots)
+            const abbreviations = {
                 "Periodic_Test": "PT",
                 "Notebook_Submission": "NB",
                 "Subject_Enrichment": "SE",
@@ -1327,21 +1295,18 @@
                     "Mid_Term": 40
                 };
                 
-                // Get better display name that prevents overflow
-                const displayName = betterAbbreviations[componentName] || componentName.replace(/_/g, ' ');
-                
-                // Get short name for mobile
-                let shortName = mobileAbbreviations[componentName] || displayName;
+                // Get abbreviated display name - ALWAYS use abbreviated format for consistency with image
+                const shortName = abbreviations[componentName] || (componentName === "MDP" || componentName === "Oral" ? 
+                    componentName : componentName.substring(0, 2));
                 
                 // Get max marks with multiple fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Create responsive header content with both full and abbreviated names keeping max marks numbers with parentheses
+                // Always use the abbreviated format matching the example in the screenshot
                 componentHeader.innerHTML = `
-                    <div class="component-name full-name" style="${window.innerWidth <= 600 ? 'display:none;' : ''}">${displayName}</div>
-                    <div class="component-name short-name" style="${window.innerWidth <= 600 ? '' : 'display:none;'}">${shortName}</div>
+                    <div class="component-name">${shortName}</div>
                     <div class="max-marks">(${finalMaxMarks})</div>
                 `;
                 
@@ -1351,22 +1316,6 @@
             // Add headers to the table
             tableHead.appendChild(headerRow1);
             tableHead.appendChild(headerRow2);
-        }
-
-        function updateResponsiveDisplay() {
-            const isMobile = window.innerWidth <= 600;
-            
-            // Show/hide appropriate header text based on screen size
-            const fullNames = document.querySelectorAll('.full-name');
-            const shortNames = document.querySelectorAll('.short-name');
-            
-            fullNames.forEach(el => {
-                el.style.display = isMobile ? 'none' : 'block';
-            });
-            
-            shortNames.forEach(el => {
-                el.style.display = isMobile ? 'block' : 'none';
-            });
         }
 
         function populateSimpleTable(subjects) {
@@ -1478,18 +1427,6 @@
                 return;
             }
             
-            // Always show full component names when printing
-            const fullNames = document.querySelectorAll('.full-name');
-            const shortNames = document.querySelectorAll('.short-name');
-            
-            fullNames.forEach(el => {
-                el.style.display = 'block';
-            });
-            
-            shortNames.forEach(el => {
-                el.style.display = 'none';
-            });
-            
             // Check if we need landscape mode (for detailed table)
             const detailedTable = document.getElementById('detailedTableContainer');
             if (detailedTable.style.display !== 'none') {
@@ -1500,9 +1437,6 @@
             
             // Print the page
             window.print();
-            
-            // Restore responsive display after printing
-            updateResponsiveDisplay();
         }
         
         // Add event listener for Enter key on roll number input
@@ -1514,8 +1448,7 @@
         
         // Check screen size on load and resize
         window.addEventListener('resize', function() {
-            // Update responsive display
-            updateResponsiveDisplay();
+            // No special handling needed since we're using the abbreviated format consistently
         });
     </script>
 </body>
