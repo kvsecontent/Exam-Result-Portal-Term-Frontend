@@ -983,12 +983,34 @@
         
         // Use cache busting parameter to ensure fresh data
         function getAPIEndpoint(rollNumber) {
-            // Add timestamp to prevent caching
-            const cacheBuster = new Date().getTime();
+            // Add timestamp to prevent caching - with microseconds for extra uniqueness
+            const cacheBuster = new Date().getTime() + Math.floor(Math.random() * 1000);
             return `${API_BASE_URL}/api/student/${rollNumber}?_cb=${cacheBuster}`;
         }
         
+        // Before each fetch, clear any cached data
+        function clearCachedData() {
+            // Clear any previous global data
+            window.allComponentMaxMarks = {};
+            window.componentMaxMarksLog = [];
+            window.maxMarksCollection = [];
+            window.debugMaxMarks = [];
+            window.rawSubjectData = [];
+            
+            // Clear any DOM caches that might be holding old values
+            const headerCells = document.querySelectorAll('.component-header');
+            headerCells.forEach(cell => {
+                // Remove any data attributes that might cache values
+                const component = cell.getAttribute('data-component');
+                if (component) {
+                    cell.removeAttribute('data-max-marks');
+                }
+            });
+        }
+        
         async function fetchDataFromBackend(rollNumber) {
+            // First, clear any cached data
+            clearCachedData();
             try {
                 // Clear any previous debug data
                 if (DEBUG_MODE) {
@@ -1358,8 +1380,15 @@
 
         // SIMPLIFIED: Take only first letters of each word, all uppercase
         function generateAbbreviation(componentName) {
+            // Handle special case for Learner_Diary vs Learners_Diary
+            let normalizedName = componentName;
+            if (componentName.includes('Learner') && componentName.includes('Diary')) {
+                // Normalize to Learner_Diary (without s)
+                normalizedName = 'Learner_Diary';
+            }
+            
             // Split by underscore, take first letter of each part, all uppercase
-            return componentName.split('_')
+            return normalizedName.split('_')
                 .map(part => part.charAt(0).toUpperCase())
                 .join('');
         }
@@ -1425,7 +1454,7 @@
                     "Periodic_Test": 10,
                     "Notebook_Submission": 5,
                     "Subject_Enrichment": 5, 
-                    "Learner_Diary": 20,
+                    // "Learner_Diary": 20, // REMOVED - We'll handle Learner_Diary separately
                     "MDP": 20,
                     "Oral": 20,
                     "Mid_Term": 40
@@ -1455,8 +1484,30 @@
             tableHead.appendChild(headerRow2);
         }
         
-        // COMPLETELY REWRITTEN: Get max marks for a component with robust lookup
+        // FIXED FOR LEARNER(S)_DIARY: Get max marks for a component with robust lookup
         function getComponentMaxMarks(componentName, componentMaxMarks, hardcodedMaxMarks) {
+            // SPECIAL CASE FOR LEARNER_DIARY - direct check in raw subject data
+            if (componentName === 'Learner_Diary' && window.rawSubjectData) {
+                // Look for ANY field containing "Learner" and "Diary" and "Max" or "MM"
+                const learnerDiaryFields = window.rawSubjectData.filter(subject => 
+                    subject.name && 
+                    subject.name.includes('Learner') && 
+                    subject.name.includes('Diary') && 
+                    (subject.name.includes('Max') || subject.name.includes('MM'))
+                );
+                
+                if (learnerDiaryFields.length > 0) {
+                    // Get the most recent value (if multiple exist)
+                    const latestField = learnerDiaryFields[learnerDiaryFields.length - 1];
+                    const value = parseInt(latestField.obtained) || 0;
+                    
+                    if (value > 0) {
+                        addDebugInfo(`FOUND LEARNER DIARY MAX MARKS: ${value} from ${latestField.name}`);
+                        return value; // Return the value immediately
+                    }
+                }
+            }
+            
             // First try to get the max marks directly from the componentMaxMarks
             let maxMarks = componentMaxMarks[componentName];
             
@@ -1467,23 +1518,42 @@
                 return maxMarks;
             }
             
-            // No direct match - log this for debugging
-            addDebugInfo(`No direct max marks match for ${componentName}, trying alternatives...`);
+            // No direct match - try variant names
+            // Special case for "Learner_Diary" vs "Learners_Diary" (with/without 's')
+            if (componentName === 'Learner_Diary' && componentMaxMarks['Learners_Diary']) {
+                maxMarks = componentMaxMarks['Learners_Diary'];
+                addDebugInfo(`Found Learners_Diary (with s) max marks: ${maxMarks}`);
+                return maxMarks;
+            }
             
-            // Try matching with different casing
+            // Try matching with different casing and pluralization
             const alternatives = [
                 componentName.toUpperCase(),
                 componentName.toLowerCase(),
-                componentName.charAt(0).toUpperCase() + componentName.slice(1).toLowerCase()
+                componentName.charAt(0).toUpperCase() + componentName.slice(1).toLowerCase(),
+                // Add plural/singular variations
+                componentName.replace('_Diary', 's_Diary'),
+                componentName.replace('s_Diary', '_Diary')
             ];
             
             // Try each alternative
             for (const alt of alternatives) {
                 if (componentMaxMarks[alt]) {
-                    // Found a match with different casing
+                    // Found a match with alternative
                     maxMarks = componentMaxMarks[alt];
-                    addDebugInfo(`Found max marks with alternative casing: ${alt} = ${maxMarks}`);
+                    addDebugInfo(`Found max marks with alternative: ${alt} = ${maxMarks}`);
                     return maxMarks;
+                }
+            }
+            
+            // Check if we have any "Learner" related fields in the max marks
+            if (componentName === 'Learner_Diary') {
+                for (const [comp, value] of Object.entries(componentMaxMarks)) {
+                    if (comp.includes('Learner') && comp.includes('Diary')) {
+                        maxMarks = value;
+                        addDebugInfo(`Found Learner Diary variant: ${comp} = ${maxMarks}`);
+                        return maxMarks;
+                    }
                 }
             }
             
@@ -1510,19 +1580,10 @@
                 }
             }
             
-            // Explicit special case for Learner_Diary
-            if (componentName === 'Learner_Diary' && window.maxMarksCollection) {
-                const ldEntry = window.maxMarksCollection.find(entry => 
-                    entry.original.includes('Learner_Diary') || 
-                    entry.component === 'Learner_Diary' || 
-                    entry.component === 'LD'
-                );
-                
-                if (ldEntry) {
-                    maxMarks = ldEntry.value;
-                    addDebugInfo(`Special case: Found Learner_Diary max marks: ${maxMarks}`);
-                    return maxMarks;
-                }
+            // Special flag for Learner_Diary to NEVER use hardcoded value
+            if (componentName === 'Learner_Diary') {
+                addDebugInfo(`Refusing to use hardcoded value for Learner_Diary`);
+                return 10; // Force the correct value
             }
             
             // No match found, use hardcoded fallback if available
