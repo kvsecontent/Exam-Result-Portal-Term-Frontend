@@ -137,33 +137,14 @@
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch; /* Better scrolling on iOS */
-            position: relative;
-            border-radius: 4px;
-            background-color: #fff;
-            border: 1px solid #eee;
-            margin-bottom: 15px;
-        }
-        
-        /* Remove default webkit scrollbar styling */
-        #simpleTableContainer::-webkit-scrollbar, 
-        #detailedTableContainer::-webkit-scrollbar {
-            height: 6px;
-            background-color: #f5f5f5;
-        }
-        
-        #simpleTableContainer::-webkit-scrollbar-thumb, 
-        #detailedTableContainer::-webkit-scrollbar-thumb {
-            background-color: #3f51b5;
-            border-radius: 3px;
         }
         
         .subjects-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 0; /* Remove margin to prevent gaps */
+            margin-bottom: 15px;
             font-size: 14px;
             min-width: 500px; /* Ensures horizontal scroll appears on small screens */
-            background-color: #fff;
         }
         
         .subjects-table th, .subjects-table td {
@@ -304,15 +285,10 @@
         .scroll-indicator {
             display: none;
             text-align: center;
-            margin: 0;
-            padding: 3px 0;
+            margin: 5px 0;
             color: #3f51b5;
             font-size: 12px;
-            background-color: rgba(255,255,255,0.9);
-            position: sticky;
-            left: 0;
-            width: 100%;
-            z-index: 1;
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -486,10 +462,6 @@
                 margin-bottom: 15px;
                 border: 1px solid #eee;
                 border-radius: 5px;
-                -webkit-backface-visibility: hidden;
-                backface-visibility: hidden;
-                transform: translateZ(0);
-                will-change: transform;
             }
             
             #simpleTableContainer::after, #detailedTableContainer::after {
@@ -497,11 +469,10 @@
                 position: absolute;
                 top: 0;
                 right: 0;
-                width: 15px;
+                width: 20px;
                 height: 100%;
-                background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 90%);
+                background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%);
                 pointer-events: none;
-                z-index: 1;
             }
         }
         
