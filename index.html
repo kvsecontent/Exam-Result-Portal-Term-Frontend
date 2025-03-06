@@ -1288,6 +1288,30 @@
             }
         }
 
+        // Generate abbreviation dynamically based on component name
+        function generateAbbreviation(componentName) {
+            // If component has underscores (multiple words)
+            if (componentName.includes('_')) {
+                // Split by underscore and take first letter of each part
+                const parts = componentName.split('_');
+                return parts.map(part => part.charAt(0)).join('');
+            } 
+            // Some component names are already abbreviated (like MDP, Oral)
+            else if (componentName.length <= 4) {
+                return componentName;
+            } 
+            // For longer single words, take first 2 characters
+            else {
+                return componentName.substring(0, 2);
+            }
+        }
+
+        // Generate full display name from component name
+        function generateFullName(componentName) {
+            // Replace underscores with spaces
+            return componentName.replace(/_/g, ' ');
+        }
+
         function createDetailedTableHeaders(activeComponents, componentMaxMarks) {
             const tableHead = document.getElementById('detailedTableHead');
             tableHead.innerHTML = '';
@@ -1325,33 +1349,13 @@
             // Create second header row for component names
             const headerRow2 = document.createElement('tr');
             
-            // Abbreviations for component display (matching the screenshots)
-            const abbreviations = {
-                "Periodic_Test": "PT",
-                "Notebook_Submission": "NB",
-                "Subject_Enrichment": "SE",
-                "Learner_Diary": "LD",
-                "Mid_Term": "MT"
-            };
-            
-            // Full names for print view
-            const fullNames = {
-                "Periodic_Test": "Periodic Test",
-                "Notebook_Submission": "Notebook Submission",
-                "Subject_Enrichment": "Subject Enrichment",
-                "Learner_Diary": "Learner Diary",
-                "Mid_Term": "Mid Term",
-                "MDP": "MDP",
-                "Oral": "Oral"
-            };
-            
             // Add each active component as a column
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
                 componentHeader.setAttribute('data-component', componentName);
                 
-                // Hardcode fallback max marks for standard components
+                // Hardcode fallback max marks for standard components - only used as last resort
                 const hardcodedMaxMarks = {
                     "Periodic_Test": 10,
                     "Notebook_Submission": 5,
@@ -1362,19 +1366,18 @@
                     "Mid_Term": 40
                 };
                 
-                // Get abbreviated display name - ALWAYS use abbreviated format for consistency with image
-                const shortName = abbreviations[componentName] || (componentName === "MDP" || componentName === "Oral" ? 
-                    componentName : componentName.substring(0, 2));
+                // Generate abbreviation dynamically
+                const shortName = generateAbbreviation(componentName);
                 
-                // Get full name for print view
-                const printName = fullNames[componentName] || componentName.replace(/_/g, ' ');
+                // Generate full name dynamically
+                const printName = generateFullName(componentName);
                 
-                // Get max marks with multiple fallbacks
+                // Use dynamic max marks with fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Use the abbreviated format with hidden full name for printing
+                // Create header content with both abbreviated and full names
                 componentHeader.innerHTML = `
                     <div class="component-name">${shortName}</div>
                     <div class="component-full-name">${printName}</div>
