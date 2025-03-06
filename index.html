@@ -161,7 +161,7 @@
             font-size: 12px;
             vertical-align: middle;
         }
-        
+
         /* Component name display */
         .component-name {
             display: block;
@@ -170,7 +170,12 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
+
+        /* Full component name (hidden by default, shown in print) */
+        .component-full-name {
+            display: none;
+        }
+
         /* Keep max marks numbers on same line as parentheses */
         .max-marks {
             white-space: nowrap;
@@ -473,7 +478,15 @@
             
             .subjects-table th.component-header {
                 padding: 2px 1px;
-                font-size: 10px;
+                font-size: 9px;
+                /* Fix overlap issue by adjusting position */
+                position: relative;
+                top: 0;
+            }
+            
+            /* Ensure adequate space between rows */
+            .subjects-table tr {
+                line-height: 1.5;
             }
             
             .component-name {
@@ -482,6 +495,11 @@
             
             .max-marks {
                 font-size: 8px;
+            }
+            
+            /* Fix the position of the first row of data cells */
+            .subjects-table tbody tr:first-child td {
+                padding-top: 8px;
             }
             
             .component-weight {
@@ -607,6 +625,24 @@
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
             
+            /* Show full component names in print mode */
+            .component-name {
+                display: none !important;
+            }
+            
+            .component-full-name {
+                display: block !important;
+                font-weight: bold;
+                margin-bottom: 3px;
+            }
+            
+            /* Adjust component header size in print */
+            .subjects-table th.component-header {
+                width: auto !important;
+                min-width: 60px !important;
+                padding: 4px !important;
+            }
+            
             /* Adjust sizes for better fit */
             .subjects-table th, .subjects-table td {
                 font-size: 9pt !important;
@@ -663,7 +699,7 @@
             
             /* Make component columns wider in landscape */
             .subjects-table th.component-header {
-                min-width: 55pt !important;
+                min-width: 70pt !important;
             }
             
             /* Ensure the disclaimer stays on the first page */
@@ -1278,6 +1314,17 @@
                 "Mid_Term": "MT"
             };
             
+            // Full names for print view
+            const fullNames = {
+                "Periodic_Test": "Periodic Test",
+                "Notebook_Submission": "Notebook Submission",
+                "Subject_Enrichment": "Subject Enrichment",
+                "Learner_Diary": "Learner Diary",
+                "Mid_Term": "Mid Term",
+                "MDP": "MDP",
+                "Oral": "Oral"
+            };
+            
             // Add each active component as a column
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
@@ -1299,14 +1346,18 @@
                 const shortName = abbreviations[componentName] || (componentName === "MDP" || componentName === "Oral" ? 
                     componentName : componentName.substring(0, 2));
                 
+                // Get full name for print view
+                const printName = fullNames[componentName] || componentName.replace(/_/g, ' ');
+                
                 // Get max marks with multiple fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Always use the abbreviated format matching the example in the screenshot
+                // Use the abbreviated format with hidden full name for printing
                 componentHeader.innerHTML = `
                     <div class="component-name">${shortName}</div>
+                    <div class="component-full-name">${printName}</div>
                     <div class="max-marks">(${finalMaxMarks})</div>
                 `;
                 
@@ -1435,7 +1486,7 @@
                 document.body.classList.remove('print-landscape');
             }
             
-            // Print the page
+            // Print the page - CSS will handle showing full component names
             window.print();
         }
         
@@ -1444,11 +1495,6 @@
             if (e.key === 'Enter') {
                 fetchResult();
             }
-        });
-        
-        // Check screen size on load and resize
-        window.addEventListener('resize', function() {
-            // No special handling needed since we're using the abbreviated format consistently
         });
     </script>
 </body>
