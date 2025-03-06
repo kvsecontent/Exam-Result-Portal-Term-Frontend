@@ -129,14 +129,6 @@
             margin: 5px 0;
         }
         
-        /* Add responsive table wrapper */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-bottom: 15px;
-        }
-        
         .subjects-table {
             width: 100%;
             border-collapse: collapse;
@@ -151,38 +143,11 @@
             width: auto;
         }
         
-        /* Fix component header display */
+        /* Make all component columns equal width */
         .subjects-table th.component-header {
-            width: 45px; /* Fixed width for all components */
-            min-width: 45px;
-            max-width: 60px;
-            padding: 2px;
-            text-align: center;
-            font-size: 12px;
-            vertical-align: middle;
-        }
-
-        /* Component name display */
-        .component-name {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Full component name (hidden by default, shown in print) */
-        .component-full-name {
-            display: none;
-        }
-
-        /* Keep max marks numbers on same line as parentheses */
-        .max-marks {
-            white-space: nowrap;
-            display: block;
-            font-size: 11px;
-            color: #666;
-            font-weight: normal;
+            width: 80px; /* Fixed width for components */
+            min-width: 80px;
+            max-width: 100px;
         }
         
         .subjects-table th:first-child { /* Subject column */
@@ -411,32 +376,14 @@
             }
         }
         
-        /* Debug panel for max marks inspection */
-        .debug-panel {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 300px;
-            background-color: #f5f5f5;
-            border: 1px solid #ddd;
-            padding: 10px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        
-        /* Enhanced mobile responsiveness */
         @media (max-width: 600px) {
             .container {
                 padding: 0;
                 border-radius: 0;
-                width: 100%;
             }
             
             .header h1 {
-                font-size: 18px;
+                font-size: 20px;
             }
             
             .student-info-item {
@@ -445,8 +392,7 @@
             }
             
             .student-info p strong {
-                width: 100px;
-                display: inline-block;
+                width: 150px;
             }
             
             .signature {
@@ -464,137 +410,16 @@
                 margin-left: 0;
             }
             
-            /* Enhanced table styling for mobile */
             .subjects-table {
                 font-size: 10px;
-                table-layout: fixed;
             }
             
             .subjects-table th, .subjects-table td {
-                padding: 4px 2px;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-            
-            /* Set specific widths for better layout on mobile */
-            .subjects-table th:first-child, 
-            .subjects-table td:first-child {
-                width: 20%;
-            }
-            
-            /* Give more space to components, less to grade/total */
-            .subjects-table th.grade-header,
-            .subjects-table td:last-child {
-                width: 12% !important; /* Reduce from 15% */
-            }
-            
-            .subjects-table th.total-header,
-            .subjects-table td:nth-last-child(2) {
-                width: 12% !important; /* Reduce from 15% */
-            }
-            
-            /* Increase vertical space for component headers */
-            .subjects-table th.component-header {
-                padding: 2px 0px;
-                font-size: 9px;
-                height: 42px; /* Increased height to prevent overlap */
-            }
-            
-            /* Add more space between header and first row */
-            #detailedTableHead tr:nth-child(2) th {
-                padding-bottom: 12px !important;
-            }
-            
-            /* Add significant padding to first row to push content down */
-            .subjects-table tbody tr:first-child td {
-                padding-top: 18px !important;
-            }
-            
-            /* Ensure component name is not too close to max marks */
-            .component-name {
-                margin-bottom: 4px !important;
-            }
-            
-            /* Better spacing for the rows */
-            .subjects-table tr {
-                line-height: 2 !important;
-            }
-            
-            /* Make sticky headers work better with these adjustments */
-            #detailedTableHead tr:nth-child(2) th {
-                position: sticky;
-                top: 32px; /* Adjusted to match header height */
-            }
-            
-            /* Add bottom border to headers to visually separate from data */
-            #detailedTableHead tr:nth-child(2) th {
-                border-bottom: 2px solid #ddd !important;
-            }
-            
-            /* Make marks display more compact to fit better */
-            .max-marks {
-                font-size: 8px;
-                line-height: 1;
-                margin-top: 2px;
+                padding: 3px;
             }
             
             .component-weight {
                 font-size: 8px;
-                padding: 1px 2px;
-            }
-        }
-        
-        /* Even smaller screens */
-        @media (max-width: 350px) {
-            .subjects-table {
-                font-size: 8px;
-            }
-            
-            .subjects-table th, .subjects-table td {
-                padding: 2px 1px;
-            }
-            
-            .subjects-table th.component-header {
-                font-size: 7px;
-            }
-        }
-        
-        /* Add sticky headers for mobile view */
-        @media (max-width: 600px) {
-            /* Make first row of headers sticky */
-            #detailedTableHead tr:first-child th,
-            #simpleTable thead tr th {
-                position: sticky;
-                top: 0;
-                background-color: #f5f5f5;
-                z-index: 10;
-                border-bottom: 2px solid #ddd;
-            }
-            
-            /* Make second row of headers sticky too */
-            #detailedTableHead tr:nth-child(2) th {
-                position: sticky;
-                top: 32px; /* Adjusted to match header height */
-                background-color: #f5f5f5;
-                z-index: 10;
-            }
-            
-            /* Make subject column sticky on left */
-            #detailedTable tbody tr td:first-child,
-            #simpleTable tbody tr td:first-child {
-                position: sticky;
-                left: 0;
-                background-color: #fff;
-                z-index: 5;
-                border-right: 2px solid #ddd;
-            }
-            
-            /* When both row and column are sticky */
-            #detailedTableHead tr th:first-child,
-            #simpleTable thead tr th:first-child {
-                position: sticky;
-                left: 0;
-                z-index: 15; /* Higher than other sticky elements */
             }
         }
         
@@ -661,54 +486,9 @@
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
             
-            /* Show full component names in print mode */
-            .component-name {
-                display: none !important;
-            }
-            
-            .component-full-name {
-                display: block !important;
-                font-weight: bold;
-                margin-bottom: 3px;
-            }
-            
-            /* Adjust component header size in print */
-            .subjects-table th.component-header {
-                width: auto !important;
-                min-width: 60px !important;
-                padding: 4px !important;
-            }
-            
-            /* Adjust sizes for better fit */
-            .subjects-table th, .subjects-table td {
-                font-size: 9pt !important;
-                padding: 4pt !important;
-            }
-            
-            /* Ensure disclaimer stays on first page */
-            .disclaimer {
-                position: relative !important;
-                margin-top: 15pt !important;
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-                page-break-before: avoid !important;
-            }
-            
-            /* Reduce overall spacing to fit more content on one page */
-            .student-info, .school-info, .exam-info, .summary, .signature-section {
-                margin-bottom: 8pt !important;
-            }
-            
-            /* Adjust page margins */
             @page {
                 size: portrait;
-                margin: 8mm !important;
-            }
-            
-            /* Force background colors and borders to print */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                margin: 10mm;
             }
         }
         
@@ -730,17 +510,7 @@
             
             @page {
                 size: landscape;
-                margin: 8mm;
-            }
-            
-            /* Make component columns wider in landscape */
-            .subjects-table th.component-header {
-                min-width: 70pt !important;
-            }
-            
-            /* Ensure the disclaimer stays on the first page */
-            .disclaimer {
-                margin-top: 10pt !important;
+                margin: 10mm;
             }
         }
     </style>
@@ -829,12 +599,6 @@
             </div>
         </div>
         
-        <!-- Debug Panel for Max Marks Visualization -->
-        <div id="debugPanel" class="debug-panel">
-            <h3>Debug Info: Max Marks</h3>
-            <div id="debugContent"></div>
-        </div>
-        
         <div class="result-card" id="resultCard">
             <div class="school-info">
                 <div class="school-logo">
@@ -861,37 +625,33 @@
                 <p><strong>Exam:</strong> <span id="examName">Final Term</span></p>
             </div>
             
-            <!-- Simple Table Container with responsive wrapper -->
+            <!-- Default table with simple columns (will be replaced with detailed one if needed) -->
             <div id="simpleTableContainer">
-                <div class="table-responsive">
-                    <table class="subjects-table" id="simpleTable">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Max Marks</th>
-                                <th>Marks Obtained</th>
-                                <th>Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody id="simpleTableBody">
-                            <!-- Subject marks will be inserted here -->
-                        </tbody>
-                    </table>
-                </div>
+                <table class="subjects-table" id="simpleTable">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Max Marks</th>
+                            <th>Marks Obtained</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="simpleTableBody">
+                        <!-- Subject marks will be inserted here -->
+                    </tbody>
+                </table>
             </div>
             
-            <!-- Detailed Table Container with responsive wrapper -->
+            <!-- Detailed table with assessment components (initially hidden) -->
             <div id="detailedTableContainer" style="display: none;">
-                <div class="table-responsive">
-                    <table class="subjects-table" id="detailedTable">
-                        <!-- Table headers will be created dynamically -->
-                        <thead id="detailedTableHead">
-                        </thead>
-                        <tbody id="detailedTableBody">
-                            <!-- Detailed subject marks will be inserted here -->
-                        </tbody>
-                    </table>
-                </div>
+                <table class="subjects-table" id="detailedTable">
+                    <!-- Table headers will be created dynamically -->
+                    <thead id="detailedTableHead">
+                    </thead>
+                    <tbody id="detailedTableBody">
+                        <!-- Detailed subject marks will be inserted here -->
+                    </tbody>
+                </table>
             </div>
             
             <div class="summary">
@@ -930,31 +690,25 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Debug mode - SET TRUE to show debug panel
-        const DEBUG_MODE = false;
-        
-        // Create an invisible debug div to help diagnose issues
-        const debugDiv = document.createElement('div');
-        debugDiv.id = 'debug-info';
-        debugDiv.style.display = 'none';
-        debugDiv.innerHTML = `
-            <h3>Debug Information</h3>
-            <pre id="debug-content"></pre>
-        `;
-        document.body.appendChild(debugDiv);
-        
-        // Helper function to add debug info
-        window.addDebug = (text) => {
-            const debugContent = document.getElementById('debug-content');
-            if (debugContent) {
-                debugContent.textContent += text + '\n';
-            }
+            // Create an invisible debug div to help diagnose issues
+            const debugDiv = document.createElement('div');
+            debugDiv.id = 'debug-info';
+            debugDiv.style.display = 'none';
+            debugDiv.innerHTML = `
+                <h3>Debug Information</h3>
+                <pre id="debug-content"></pre>
+            `;
+            document.body.appendChild(debugDiv);
             
-            // Also log to console for easier debugging
-            console.log(text);
-        };
-        
-        // Track API response time to determine if server is "cold"
+            // Helper function to add debug info
+            window.addDebug = (text) => {
+                const debugContent = document.getElementById('debug-content');
+                if (debugContent) {
+                    debugContent.textContent += text + '\n';
+                }
+            };
+            
+            // Track API response time to determine if server is "cold"
         let apiResponseStart = 0;
         let isFirstFetch = true;
         let isServerCold = false;
@@ -962,61 +716,8 @@
         // Flag to check if we need detailed view or not
         let useDetailedView = false;
         
-        // Initialize debug panel
-        if (DEBUG_MODE) {
-            document.getElementById('debugPanel').style.display = 'block';
-        }
-        
-        // Add debug info to the debug panel
-        function addDebugInfo(text) {
-            if (!DEBUG_MODE) return;
-            
-            const debugContent = document.getElementById('debugContent');
-            if (debugContent) {
-                const entry = document.createElement('div');
-                entry.style.marginBottom = '5px';
-                entry.style.borderBottom = '1px solid #ddd';
-                entry.textContent = text;
-                debugContent.appendChild(entry);
-            }
-        }
-        
-        // Use cache busting parameter to ensure fresh data
-        function getAPIEndpoint(rollNumber) {
-            // Add timestamp to prevent caching - with microseconds for extra uniqueness
-            const cacheBuster = new Date().getTime() + Math.floor(Math.random() * 1000);
-            return `${API_BASE_URL}/api/student/${rollNumber}?_cb=${cacheBuster}`;
-        }
-        
-        // Before each fetch, clear any cached data
-        function clearCachedData() {
-            // Clear any previous global data
-            window.allComponentMaxMarks = {};
-            window.componentMaxMarksLog = [];
-            window.maxMarksCollection = [];
-            window.debugMaxMarks = [];
-            window.rawSubjectData = [];
-            
-            // Clear any DOM caches that might be holding old values
-            const headerCells = document.querySelectorAll('.component-header');
-            headerCells.forEach(cell => {
-                // Remove any data attributes that might cache values
-                const component = cell.getAttribute('data-component');
-                if (component) {
-                    cell.removeAttribute('data-max-marks');
-                }
-            });
-        }
-        
         async function fetchDataFromBackend(rollNumber) {
-            // First, clear any cached data
-            clearCachedData();
             try {
-                // Clear any previous debug data
-                if (DEBUG_MODE) {
-                    document.getElementById('debugContent').innerHTML = '';
-                }
-                
                 // Start timing the API response
                 apiResponseStart = Date.now();
                 
@@ -1038,20 +739,8 @@
                     }
                 }, 3000);
                 
-                // Use cache busting to ensure fresh data
-                const url = getAPIEndpoint(rollNumber);
-                addDebugInfo(`Fetching from: ${url}`);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    // Add no-cache headers to prevent caching
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-                
+                const url = `${API_BASE_URL}/api/student/${rollNumber}`;
+                const response = await fetch(url);
                 const result = await response.json();
                 
                 // Track that we've completed one fetch
@@ -1070,43 +759,40 @@
                     // Process the data
                     const data = result.data;
                     
-                    // Initialize global data structures
-                    window.rawSubjectData = data.subjects || [];
-                    
-                    // Log raw data for debugging
-                    addDebugInfo(`Raw data received for student ${rollNumber}`);
-                    
                     // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
                     const componentMaxMarks = {};
-                    
-                    // Clear any previous max marks data
-                    window.allComponentMaxMarks = {};
-                    window.componentMaxMarksLog = [];
                     
                     // Group subjects by their base name (before the underscore)
                     const groupedSubjects = {};
                     const mainSubjects = [];
                     
-                    // First extract all possible Max_Marks values and store them
-                    await extractMaxMarks(data, componentMaxMarks);
-                    
-                    // Then process subjects and their components
+                    // Extract Max_Marks values first (before processing subjects)
                     if (data.subjects && Array.isArray(data.subjects)) {
-                        // Log debug info
-                        addDebugInfo(`Found ${data.subjects.length} subjects in raw data`);
+                        // First scan specifically for Max_Marks fields
+                        data.subjects.forEach(subject => {
+                            if (subject.name && subject.name.includes('_Max_Marks')) {
+                                const parts = subject.name.split('_Max_Marks')[0].split('_');
+                                const baseSubjectName = parts[0]; // First part is subject name
+                                
+                                if (parts.length > 1) {
+                                    // Extract component name (everything between subject name and _Max_Marks)
+                                    const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
+                                    const maxMarks = subject.obtained || 0;
+                                    
+                                    // Store max marks for this component
+                                    if (maxMarks > 0) {
+                                        componentMaxMarks[componentName] = maxMarks;
+                                        console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                                    }
+                                }
+                            }
+                        });
                         
-                        // Process all subjects to build the groupedSubjects object
+                        // Now process all subjects to build the groupedSubjects object
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
                             if (!subject.name) return;
-                            
-                            // Skip Max_Marks fields in this phase
-                            if (subject.name.includes('Max_Marks') || 
-                                subject.name.includes('_MAX') ||
-                                subject.name.includes('_MM')) {
-                                return;
-                            }
                             
                             const parts = subject.name.split('_');
                             const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
@@ -1118,6 +804,27 @@
                                 // Check if component ends with "_Obtained" and remove it
                                 if (componentName.endsWith("_Obtained")) {
                                     componentName = componentName.replace("_Obtained", "");
+                                }
+                                
+                                let baseComponentName;
+                                // Handle specially formatted fields like Hindi_Periodic_Test_Max_Marks
+                                if (subject.name.includes('_Max_Marks')) {
+                                    const fullName = subject.name;
+                                    const baseSubjectName = parts[0]; // e.g., Hindi
+                                    baseComponentName = fullName.substring(baseSubjectName.length + 1, fullName.length - 10); // "Periodic_Test"
+                                    
+                                    const maxMarks = subject.obtained || 0;
+                                    if (maxMarks > 0) {
+                                        // Store for debugging
+                                        window.allComponentMaxMarks = window.allComponentMaxMarks || {};
+                                        window.allComponentMaxMarks[baseComponentName] = maxMarks;
+                                        
+                                        componentMaxMarks[baseComponentName] = maxMarks;
+                                        console.log(`Found max marks for ${baseComponentName}: ${maxMarks}`);
+                                    }
+                                    
+                                    // Skip further processing
+                                    return;
                                 }
                                 
                                 // Create the subject group if it doesn't exist
@@ -1207,120 +914,6 @@
                 return null;
             }
         }
-        
-        // COMPLETELY REWRITTEN: Extract Max Marks from subject data with multiple formats supported
-        async function extractMaxMarks(data, componentMaxMarks) {
-            if (!data.subjects || !Array.isArray(data.subjects)) {
-                return;
-            }
-            
-            // Create a debug collection
-            window.maxMarksCollection = [];
-            
-            // First pass - extract potential max marks data
-            const maxMarksFields = data.subjects.filter(subject => 
-                subject.name && (
-                    subject.name.includes('Max_Marks') || 
-                    subject.name.includes('_MAX') || 
-                    subject.name.includes('_MM') ||
-                    subject.name.includes('Max')
-                )
-            );
-            
-            // Log the max marks fields for debugging
-            addDebugInfo(`Found ${maxMarksFields.length} potential max marks fields`);
-            
-            // For debugging
-            if (DEBUG_MODE) {
-                maxMarksFields.forEach((field, index) => {
-                    addDebugInfo(`Max Field #${index + 1}: ${field.name} = ${field.obtained || 0}`);
-                });
-            }
-            
-            // Process each max marks field
-            maxMarksFields.forEach(subject => {
-                let componentName = null;
-                let maxMarksValue = parseInt(subject.obtained) || 0;
-                let subjectName = null;
-                
-                // Extract component name based on different patterns
-                
-                // Pattern 1: Subject_Component_Max_Marks
-                if (subject.name.includes('_Max_Marks')) {
-                    const nameParts = subject.name.split('_Max_Marks')[0].split('_');
-                    subjectName = nameParts[0];
-                    
-                    if (nameParts.length > 1) {
-                        componentName = nameParts.slice(1).join('_');
-                    }
-                }
-                // Pattern 2: Subject_Component_MAX
-                else if (subject.name.includes('_MAX')) {
-                    const nameParts = subject.name.split('_MAX')[0].split('_');
-                    subjectName = nameParts[0];
-                    
-                    if (nameParts.length > 1) {
-                        componentName = nameParts.slice(1).join('_');
-                    }
-                }
-                // Pattern 3: Subject_Component_MM
-                else if (subject.name.includes('_MM')) {
-                    const nameParts = subject.name.split('_MM')[0].split('_');
-                    subjectName = nameParts[0];
-                    
-                    if (nameParts.length > 1) {
-                        componentName = nameParts.slice(1).join('_');
-                    }
-                }
-                
-                // Only store valid max marks values
-                if (componentName && maxMarksValue > 0) {
-                    // Save this max marks value
-                    componentMaxMarks[componentName] = maxMarksValue;
-                    
-                    // Log to our global debug collections
-                    window.maxMarksCollection.push({
-                        original: subject.name,
-                        component: componentName,
-                        value: maxMarksValue,
-                        subject: subjectName
-                    });
-                    
-                    // Log for debugging
-                    window.componentMaxMarksLog = window.componentMaxMarksLog || [];
-                    window.componentMaxMarksLog.push({
-                        component: componentName,
-                        value: maxMarksValue,
-                        source: subject.name
-                    });
-                    
-                    // Report what we found
-                    addDebugInfo(`Found max marks: ${componentName} = ${maxMarksValue} (from ${subject.name})`);
-                }
-            });
-            
-            // Add special handling for Learner_Diary - check specifically for this
-            const learnerDiaryMaxField = maxMarksFields.find(subject => 
-                subject.name && subject.name.includes('Learner_Diary') && 
-                (subject.name.includes('Max_Marks') || subject.name.includes('_MAX') || subject.name.includes('_MM'))
-            );
-            
-            if (learnerDiaryMaxField) {
-                const maxValue = parseInt(learnerDiaryMaxField.obtained) || 0;
-                if (maxValue > 0) {
-                    componentMaxMarks['Learner_Diary'] = maxValue;
-                    addDebugInfo(`Found explicit Learner_Diary max marks: ${maxValue}`);
-                }
-            }
-            
-            // Log final max marks data for debugging
-            if (DEBUG_MODE) {
-                addDebugInfo('Final Max Marks data:');
-                Object.entries(componentMaxMarks).forEach(([component, value]) => {
-                    addDebugInfo(`${component} = ${value}`);
-                });
-            }
-        }
 
         function showLoadingMessage(message) {
             const loadingMessage = document.getElementById('loadingMessage');
@@ -1376,298 +969,6 @@
             // This handles grades with + symbols like A+, B+, etc.
             const baseGrade = grade.charAt(0);
             return `grade-${baseGrade}`;
-        }
-
-        // SIMPLIFIED: Take only first letters of each word, all uppercase
-        function generateAbbreviation(componentName) {
-            // Handle special case for Learner_Diary vs Learners_Diary
-            let normalizedName = componentName;
-            if (componentName.includes('Learner') && componentName.includes('Diary')) {
-                // Normalize to Learner_Diary (without s)
-                normalizedName = 'Learner_Diary';
-            }
-            
-            // Split by underscore, take first letter of each part, all uppercase
-            return normalizedName.split('_')
-                .map(part => part.charAt(0).toUpperCase())
-                .join('');
-        }
-
-        // Generate full display name from component name (enhanced to format properly)
-        function generateFullName(componentName) {
-            // Replace underscores with spaces
-            let displayName = componentName.replace(/_/g, ' ');
-            
-            // Capitalize each word for better readability
-            displayName = displayName.split(' ').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            ).join(' ');
-            
-            return displayName;
-        }
-
-        function createDetailedTableHeaders(activeComponents, componentMaxMarks) {
-            const tableHead = document.getElementById('detailedTableHead');
-            tableHead.innerHTML = '';
-            
-            // Create first header row
-            const headerRow1 = document.createElement('tr');
-            
-            // Subject column (rowspan=2)
-            const subjectHeader = document.createElement('th');
-            subjectHeader.textContent = 'Subject';
-            subjectHeader.setAttribute('rowspan', '2');
-            headerRow1.appendChild(subjectHeader);
-            
-            // Components columns (colspan=activeComponents.length)
-            const componentsHeader = document.createElement('th');
-            componentsHeader.textContent = 'Assessment Components';
-            componentsHeader.setAttribute('colspan', activeComponents.length);
-            headerRow1.appendChild(componentsHeader);
-            
-            // Total column (rowspan=2)
-            const totalHeader = document.createElement('th');
-            totalHeader.textContent = 'Total';
-            totalHeader.setAttribute('rowspan', '2');
-            totalHeader.className = "total-header";
-            totalHeader.innerHTML = 'Total<br><span class="max-marks">(100)</span>';
-            headerRow1.appendChild(totalHeader);
-            
-            // Grade column (rowspan=2)
-            const gradeHeader = document.createElement('th');
-            gradeHeader.textContent = 'Grade';
-            gradeHeader.setAttribute('rowspan', '2');
-            gradeHeader.className = "grade-header";
-            headerRow1.appendChild(gradeHeader);
-            
-            // Create second header row for component names
-            const headerRow2 = document.createElement('tr');
-            
-            // Add each active component as a column
-            activeComponents.forEach(componentName => {
-                const componentHeader = document.createElement('th');
-                componentHeader.className = "component-header";
-                componentHeader.setAttribute('data-component', componentName);
-                
-                // Hardcode fallback max marks for standard components - only used as last resort
-                const hardcodedMaxMarks = {
-                    "Periodic_Test": 10,
-                    "Notebook_Submission": 5,
-                    "Subject_Enrichment": 5, 
-                    // "Learner_Diary": 20, // REMOVED - We'll handle Learner_Diary separately
-                    "MDP": 20,
-                    "Oral": 20,
-                    "Mid_Term": 40
-                };
-                
-                // Generate abbreviation - first letter of each word in uppercase
-                const shortName = generateAbbreviation(componentName);
-                
-                // Generate full name with proper capitalization
-                const printName = generateFullName(componentName);
-                
-                // Get max marks for this component with robust lookup
-                const maxMarksValue = getComponentMaxMarks(componentName, componentMaxMarks, hardcodedMaxMarks);
-                
-                // Create header content with both abbreviated and full names
-                componentHeader.innerHTML = `
-                    <div class="component-name">${shortName}</div>
-                    <div class="component-full-name">${printName}</div>
-                    <div class="max-marks">(${maxMarksValue})</div>
-                `;
-                
-                headerRow2.appendChild(componentHeader);
-            });
-            
-            // Add headers to the table
-            tableHead.appendChild(headerRow1);
-            tableHead.appendChild(headerRow2);
-        }
-        
-        // FIXED FOR LEARNER(S)_DIARY: Get max marks for a component with robust lookup
-        function getComponentMaxMarks(componentName, componentMaxMarks, hardcodedMaxMarks) {
-            // SPECIAL CASE FOR LEARNER_DIARY - direct check in raw subject data
-            if (componentName === 'Learner_Diary' && window.rawSubjectData) {
-                // Look for ANY field containing "Learner" and "Diary" and "Max" or "MM"
-                const learnerDiaryFields = window.rawSubjectData.filter(subject => 
-                    subject.name && 
-                    subject.name.includes('Learner') && 
-                    subject.name.includes('Diary') && 
-                    (subject.name.includes('Max') || subject.name.includes('MM'))
-                );
-                
-                if (learnerDiaryFields.length > 0) {
-                    // Get the most recent value (if multiple exist)
-                    const latestField = learnerDiaryFields[learnerDiaryFields.length - 1];
-                    const value = parseInt(latestField.obtained) || 0;
-                    
-                    if (value > 0) {
-                        addDebugInfo(`FOUND LEARNER DIARY MAX MARKS: ${value} from ${latestField.name}`);
-                        return value; // Return the value immediately
-                    }
-                }
-            }
-            
-            // First try to get the max marks directly from the componentMaxMarks
-            let maxMarks = componentMaxMarks[componentName];
-            
-            // If we found a value, return it immediately
-            if (maxMarks) {
-                // Log for debugging
-                addDebugInfo(`Direct match found for ${componentName}: ${maxMarks}`);
-                return maxMarks;
-            }
-            
-            // No direct match - try variant names
-            // Special case for "Learner_Diary" vs "Learners_Diary" (with/without 's')
-            if (componentName === 'Learner_Diary' && componentMaxMarks['Learners_Diary']) {
-                maxMarks = componentMaxMarks['Learners_Diary'];
-                addDebugInfo(`Found Learners_Diary (with s) max marks: ${maxMarks}`);
-                return maxMarks;
-            }
-            
-            // Try matching with different casing and pluralization
-            const alternatives = [
-                componentName.toUpperCase(),
-                componentName.toLowerCase(),
-                componentName.charAt(0).toUpperCase() + componentName.slice(1).toLowerCase(),
-                // Add plural/singular variations
-                componentName.replace('_Diary', 's_Diary'),
-                componentName.replace('s_Diary', '_Diary')
-            ];
-            
-            // Try each alternative
-            for (const alt of alternatives) {
-                if (componentMaxMarks[alt]) {
-                    // Found a match with alternative
-                    maxMarks = componentMaxMarks[alt];
-                    addDebugInfo(`Found max marks with alternative: ${alt} = ${maxMarks}`);
-                    return maxMarks;
-                }
-            }
-            
-            // Check if we have any "Learner" related fields in the max marks
-            if (componentName === 'Learner_Diary') {
-                for (const [comp, value] of Object.entries(componentMaxMarks)) {
-                    if (comp.includes('Learner') && comp.includes('Diary')) {
-                        maxMarks = value;
-                        addDebugInfo(`Found Learner Diary variant: ${comp} = ${maxMarks}`);
-                        return maxMarks;
-                    }
-                }
-            }
-            
-            // Next, check for partial match (component name might be formatted differently)
-            for (const [comp, value] of Object.entries(componentMaxMarks)) {
-                // Skip empty components
-                if (!comp) continue;
-                
-                // Try to match by first letters
-                const compFirstLetters = generateAbbreviation(comp);
-                const targetFirstLetters = generateAbbreviation(componentName);
-                
-                if (compFirstLetters === targetFirstLetters) {
-                    maxMarks = value;
-                    addDebugInfo(`Found max marks with abbreviation match: ${comp} (${compFirstLetters}) = ${maxMarks}`);
-                    return maxMarks;
-                }
-                
-                // Try partial match
-                if (comp.includes(componentName) || componentName.includes(comp)) {
-                    maxMarks = value;
-                    addDebugInfo(`Found max marks with partial match: ${comp} = ${maxMarks}`);
-                    return maxMarks; 
-                }
-            }
-            
-            // Special flag for Learner_Diary to NEVER use hardcoded value
-            if (componentName === 'Learner_Diary') {
-                addDebugInfo(`Refusing to use hardcoded value for Learner_Diary`);
-                return 10; // Force the correct value
-            }
-            
-            // No match found, use hardcoded fallback if available
-            maxMarks = hardcodedMaxMarks[componentName];
-            
-            if (maxMarks) {
-                addDebugInfo(`Using hardcoded max marks for ${componentName}: ${maxMarks}`);
-                return maxMarks;
-            }
-            
-            // Last resort: return 0
-            addDebugInfo(`No max marks found for ${componentName}, using 0`);
-            return 0;
-        }
-
-        function populateSimpleTable(subjects) {
-            const tableBody = document.getElementById('simpleTableBody');
-            tableBody.innerHTML = '';
-            
-            // Add subject rows to the simple table
-            subjects.forEach(subject => {
-                const row = document.createElement('tr');
-                
-                const nameCell = document.createElement('td');
-                nameCell.textContent = subject.name;
-                
-                const maxMarksCell = document.createElement('td');
-                maxMarksCell.textContent = subject.maxMarks;
-                
-                const obtainedCell = document.createElement('td');
-                obtainedCell.textContent = subject.obtained || '0';
-                
-                const gradeCell = document.createElement('td');
-                gradeCell.textContent = subject.grade;
-                gradeCell.className = getGradeClass(subject.grade);
-                
-                row.appendChild(nameCell);
-                row.appendChild(maxMarksCell);
-                row.appendChild(obtainedCell);
-                row.appendChild(gradeCell);
-                
-                tableBody.appendChild(row);
-            });
-        }
-
-        function populateDetailedTable(subjects, activeComponents) {
-            const tableBody = document.getElementById('detailedTableBody');
-            tableBody.innerHTML = '';
-            
-            // Add subject rows to the detailed table
-            subjects.forEach(subject => {
-                const row = document.createElement('tr');
-                
-                // Add subject name
-                const nameCell = document.createElement('td');
-                nameCell.textContent = subject.name;
-                row.appendChild(nameCell);
-                
-                // Add cells for each active component
-                activeComponents.forEach(componentName => {
-                    const cell = document.createElement('td');
-                    
-                    if (subject.components && subject.components[componentName]) {
-                        cell.textContent = subject.components[componentName].marks;
-                    } else {
-                        cell.textContent = '-';
-                    }
-                    
-                    row.appendChild(cell);
-                });
-                
-                // Add total cell
-                const totalCell = document.createElement('td');
-                totalCell.textContent = subject.obtained || '0';
-                row.appendChild(totalCell);
-                
-                // Add grade cell
-                const gradeCell = document.createElement('td');
-                gradeCell.textContent = subject.grade;
-                gradeCell.className = getGradeClass(subject.grade);
-                row.appendChild(gradeCell);
-                
-                tableBody.appendChild(row);
-            });
         }
 
         function displayResult(data, rollNumber) {
@@ -1759,14 +1060,167 @@
             const resultStatus = document.getElementById('resultStatus');
             resultStatus.textContent = data.result;
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
+        }
+
+        function createDetailedTableHeaders(activeComponents, componentMaxMarks) {
+            const tableHead = document.getElementById('detailedTableHead');
+            tableHead.innerHTML = '';
             
-            // Reset scroll position for mobile tables
-            if (window.innerWidth <= 600) {
-                const tableResponsive = document.querySelectorAll('.table-responsive');
-                tableResponsive.forEach(container => {
-                    container.scrollLeft = 0;
+            // Create first header row
+            const headerRow1 = document.createElement('tr');
+            
+            // Subject column (rowspan=2)
+            const subjectHeader = document.createElement('th');
+            subjectHeader.textContent = 'Subject';
+            subjectHeader.setAttribute('rowspan', '2');
+            headerRow1.appendChild(subjectHeader);
+            
+            // Components columns (colspan=activeComponents.length)
+            const componentsHeader = document.createElement('th');
+            componentsHeader.textContent = 'Assessment Components';
+            componentsHeader.setAttribute('colspan', activeComponents.length);
+            headerRow1.appendChild(componentsHeader);
+            
+            // Total column (rowspan=2)
+            const totalHeader = document.createElement('th');
+            totalHeader.textContent = 'Total';
+            totalHeader.setAttribute('rowspan', '2');
+            totalHeader.className = "total-header";
+            totalHeader.innerHTML += '<br>(100)';
+            headerRow1.appendChild(totalHeader);
+            
+            // Grade column (rowspan=2)
+            const gradeHeader = document.createElement('th');
+            gradeHeader.textContent = 'Grade';
+            gradeHeader.setAttribute('rowspan', '2');
+            gradeHeader.className = "grade-header";
+            headerRow1.appendChild(gradeHeader);
+            
+            // Create second header row for component names
+            const headerRow2 = document.createElement('tr');
+            
+            // Add each active component as a column
+            activeComponents.forEach(componentName => {
+                window.addDebug(`Processing component: ${componentName}`);
+                
+                const componentHeader = document.createElement('th');
+                componentHeader.className = "component-header";
+                
+                // Hardcode fallback max marks for standard components
+                const hardcodedMaxMarks = {
+                    "Periodic_Test": 10,
+                    "Notebook_Submission": 5,
+                    "Subject_Enrichment": 5, 
+                    "Learner_Diary": 20,
+                    "MDP": 20,
+                    "Oral": 20,
+                    "Mid_Term": 40
+                };
+
+                // Get display name by replacing underscores with spaces
+                const displayName = componentName.replace(/_/g, ' ');
+                
+                // Get max marks with multiple fallbacks
+                let finalMaxMarks = componentMaxMarks[componentName] || 
+                                   (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
+                                   hardcodedMaxMarks[componentName] || 0;
+                
+                // Split long component names onto multiple lines
+                let formattedName = displayName;
+                
+                // If the name has spaces and is longer than 10 characters, split at space
+                if (displayName.includes(' ') && displayName.length > 10) {
+                    // Split at a space character, preferably near the middle
+                    const words = displayName.split(' ');
+                    if (words.length >= 2) {
+                        // If there are at least 2 words, join them with line breaks
+                        formattedName = words.join('<br>');
+                    }
+                }
+                
+                // Use a simpler, more subtle style
+                componentHeader.innerHTML = `
+                    <div style="margin:0; padding:0;">${formattedName}</div>
+                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
+                `;
+                
+                headerRow2.appendChild(componentHeader);
+            });
+            
+            // Add headers to the table
+            tableHead.appendChild(headerRow1);
+            tableHead.appendChild(headerRow2);
+        }
+
+        function populateSimpleTable(subjects) {
+            const tableBody = document.getElementById('simpleTableBody');
+            tableBody.innerHTML = '';
+            
+            // Add subject rows to the simple table
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                
+                const nameCell = document.createElement('td');
+                nameCell.textContent = subject.name;
+                
+                const maxMarksCell = document.createElement('td');
+                maxMarksCell.textContent = subject.maxMarks;
+                
+                const obtainedCell = document.createElement('td');
+                obtainedCell.textContent = subject.obtained || '0';
+                
+                const gradeCell = document.createElement('td');
+                gradeCell.textContent = subject.grade;
+                gradeCell.className = getGradeClass(subject.grade);
+                
+                row.appendChild(nameCell);
+                row.appendChild(maxMarksCell);
+                row.appendChild(obtainedCell);
+                row.appendChild(gradeCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function populateDetailedTable(subjects, activeComponents) {
+            const tableBody = document.getElementById('detailedTableBody');
+            tableBody.innerHTML = '';
+            
+            // Add subject rows to the detailed table
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                
+                // Add subject name
+                const nameCell = document.createElement('td');
+                nameCell.textContent = subject.name;
+                row.appendChild(nameCell);
+                
+                // Add cells for each active component
+                activeComponents.forEach(componentName => {
+                    const cell = document.createElement('td');
+                    
+                    if (subject.components && subject.components[componentName]) {
+                        cell.textContent = subject.components[componentName].marks;
+                    } else {
+                        cell.textContent = '-';
+                    }
+                    
+                    row.appendChild(cell);
                 });
-            }
+                
+                // Add total cell
+                const totalCell = document.createElement('td');
+                totalCell.textContent = subject.obtained || '0';
+                row.appendChild(totalCell);
+                
+                // Add grade cell
+                const gradeCell = document.createElement('td');
+                gradeCell.textContent = subject.grade;
+                gradeCell.className = getGradeClass(subject.grade);
+                row.appendChild(gradeCell);
+                
+                tableBody.appendChild(row);
+            });
         }
 
         function fetchResult() {
@@ -1815,7 +1269,7 @@
                 document.body.classList.remove('print-landscape');
             }
             
-            // Print the page - CSS will handle showing full component names
+            // Print the page
             window.print();
         }
         
