@@ -1166,24 +1166,63 @@
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
                 
-                // Hardcode fallback max marks for standard components
+                // Predefined max marks values per your specifications
                 const hardcodedMaxMarks = {
                     "Periodic_Test": 10,
+                    "Annual_Exam_Periodic_Test": 20, // Special case for Periodic Test in Annual Exam
+                    "Subject_Enrichment": 5,
                     "Notebook_Submission": 5,
-                    "Subject_Enrichment": 5, 
-                    "Learner_Diary": 20,
+                    "Mid_Term": 40,
+                    "Sanskrit_Mid_Term": 60, // Special case for Sanskrit
+                    "SEE": 40,
+                    "Oral_Skill": 20,
+                    "Learner_Diary": 10,
+                    "Learners_Diary": 10, // Alternative spelling
                     "MDP": 20,
-                    "Oral": 20,
-                    "Mid_Term": 40
+                    "Half_Yearly_Exam": 30,
+                    "Annual_Exam": 50,
+                    "Oral": 20
                 };
 
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
                 
-                // Get max marks with multiple fallbacks
-                let finalMaxMarks = componentMaxMarks[componentName] || 
-                                   (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
-                                   hardcodedMaxMarks[componentName] || 0;
+                // Determine max marks based on component name and context
+                let finalMaxMarks = 0;
+                
+                // First check if we have actual data from API
+                if (componentMaxMarks[componentName]) {
+                    finalMaxMarks = componentMaxMarks[componentName];
+                } 
+                // Then fallback to debug data if available
+                else if (window.allComponentMaxMarks && window.allComponentMaxMarks[componentName]) {
+                    finalMaxMarks = window.allComponentMaxMarks[componentName];
+                }
+                // Special case handling
+                else if (componentName === "Periodic_Test" && activeComponents.includes("Annual_Exam")) {
+                    finalMaxMarks = 20; // Periodic_Test in Annual_Exam context
+                }
+                else if (componentName === "Mid_Term" && 
+                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
+                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
+                    finalMaxMarks = 60; // Mid_Term for Sanskrit subject
+                }
+                // Standard hardcoded values
+                else if (hardcodedMaxMarks[componentName]) {
+                    finalMaxMarks = hardcodedMaxMarks[componentName];
+                }
+                // Special case for component names with Max_Marks in them
+                else if (componentName.includes("Max_Marks")) {
+                    // Extract the base component name
+                    const baseComponent = componentName.split("_Max_Marks")[0];
+                    if (hardcodedMaxMarks[baseComponent]) {
+                        finalMaxMarks = hardcodedMaxMarks[baseComponent];
+                    }
+                }
+                // Default value if nothing else matches
+                else {
+                    finalMaxMarks = 0;
+                }
                 
                 // Split long component names onto multiple lines
                 let formattedName = displayName;
@@ -1198,10 +1237,38 @@
                     }
                 }
                 
-                // Use a simpler, more subtle style
+                // Extract the component display name without any "Max_Marks" text
+                let cleanDisplayName = formattedName;
+                if (cleanDisplayName.includes("Max Marks")) {
+                    cleanDisplayName = cleanDisplayName.split("Max Marks")[0].trim();
+                }
+                
+                // Preserve exact column names as specified
+                const exactNames = {
+                    "periodic test": "Periodic_Test",
+                    "subject enrichment": "Subject_Enrichment",
+                    "notebook submission": "Notebook Submission",
+                    "mid term": "Mid_Term",
+                    "see": "SEE",
+                    "oral skill": "Oral_Skill",
+                    "learners diary": "Learners_Diary",
+                    "mdp": "MDP",
+                    "half yearly exam": "Half_Yearly_Exam",
+                    "annual exam": "Annual_Exam"
+                };
+                
+                // Check if we should use an exact name
+                const lcName = cleanDisplayName.toLowerCase();
+                Object.keys(exactNames).forEach(key => {
+                    if (lcName.includes(key)) {
+                        cleanDisplayName = exactNames[key];
+                    }
+                });
+                
+                // Use a more standardized display format showing component name and max marks
                 componentHeader.innerHTML = `
-                    <div style="margin:0; padding:0;">${formattedName}</div>
-                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
+                    <div style="margin:0; padding:0;">${cleanDisplayName}</div>
+                    <div style="margin:3px 0; padding:2px; color:#444; display:block !important; width:auto; text-align:center; font-weight:bold; font-size:13px;">(${finalMaxMarks})</div>
                 `;
                 
                 headerRow2.appendChild(componentHeader);
@@ -1246,6 +1313,19 @@
             const tableBody = document.getElementById('detailedTableBody');
             tableBody.innerHTML = '';
             
+            // Track if we have Sanskrit subject
+            let hasSanskritSubject = false;
+            
+            // Check if Sanskrit subject exists first
+            subjects.forEach(subject => {
+                if (subject.name.toLowerCase().includes('sanskrit')) {
+                    hasSanskritSubject = true;
+                }
+            });
+            
+            // Store this for component max marks calculation
+            window.hasSanskritSubject = hasSanskritSubject;
+            
             // Add subject rows to the detailed table
             subjects.forEach(subject => {
                 const row = document.createElement('tr');
@@ -1280,6 +1360,38 @@
                 row.appendChild(gradeCell);
                 
                 tableBody.appendChild(row);
+            });
+            
+            // After populating the table, update the table headers if needed
+            // This ensures max marks values are accurate based on subject context
+            if (hasSanskritSubject) {
+                updateComponentMaxMarks();
+            }
+        }
+        
+        // Function to update component max marks when needed
+        function updateComponentMaxMarks() {
+            const tableHead = document.getElementById('detailedTableHead');
+            const headerRows = tableHead.querySelectorAll('tr');
+            
+            // Skip if there's no second row for component headers
+            if (headerRows.length < 2) return;
+            
+            // Get the component headers from the second row
+            const componentHeaders = headerRows[1].querySelectorAll('th');
+            
+            // Update max marks for Sanskrit-specific components if needed
+            componentHeaders.forEach(header => {
+                const headerText = header.textContent.toLowerCase();
+                
+                // Check for Mid_Term component which has different max marks for Sanskrit
+                if (headerText.includes('mid term') && window.hasSanskritSubject) {
+                    // Find the max marks display element
+                    const maxMarksDiv = header.querySelector('div:nth-child(2)');
+                    if (maxMarksDiv) {
+                        maxMarksDiv.textContent = '(60)';
+                    }
+                }
             });
         }
 
