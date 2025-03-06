@@ -153,14 +153,26 @@
         
         /* Fix component header display */
         .subjects-table th.component-header {
-            width: 40px; /* Smaller fixed width for components */
-            min-width: 40px;
+            width: 45px; /* Fixed width for all components */
+            min-width: 45px;
             max-width: 50px;
             padding: 4px 2px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
+            vertical-align: top; /* Align all headers to top */
+            height: 60px; /* Fixed height for all component header cells */
         }
-        
+
+        /* Component name container */
+        .component-name {
+            display: block;
+            min-height: 30px; /* Fixed minimum height */
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
         /* Keep max marks numbers on same line as parentheses */
         .max-marks {
             white-space: nowrap;
@@ -466,6 +478,11 @@
             .subjects-table th.component-header {
                 padding: 3px 1px;
                 font-size: 10px;
+                height: 50px; /* Smaller height for mobile */
+            }
+            
+            .component-name {
+                min-height: 20px;
             }
             
             .max-marks {
@@ -1275,6 +1292,24 @@
             // Create second header row for component names
             const headerRow2 = document.createElement('tr');
             
+            // Create shorter version of long component names to prevent overflow
+            const betterAbbreviations = {
+                "Periodic_Test": "Periodic<br>Test",
+                "Notebook_Submission": "Notebook<br>Submission",
+                "Subject_Enrichment": "Subject<br>Enrichment",
+                "Learner_Diary": "Learner<br>Diary",
+                "Mid_Term": "Mid<br>Term"
+            };
+
+            // Create abbreviated component names for small screens
+            const mobileAbbreviations = {
+                "Periodic_Test": "PT",
+                "Notebook_Submission": "NB",
+                "Subject_Enrichment": "SE",
+                "Learner_Diary": "LD",
+                "Mid_Term": "MT"
+            };
+            
             // Add each active component as a column
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
@@ -1291,21 +1326,12 @@
                     "Oral": 20,
                     "Mid_Term": 40
                 };
-
-                // Create abbreviated component names for small screens
-                const abbreviations = {
-                    "Periodic_Test": "PT",
-                    "Notebook_Submission": "NB",
-                    "Subject_Enrichment": "SE",
-                    "Learner_Diary": "LD",
-                    "Mid_Term": "MT"
-                };
                 
-                // Get display name by replacing underscores with spaces
-                const displayName = componentName.replace(/_/g, ' ');
+                // Get better display name that prevents overflow
+                const displayName = betterAbbreviations[componentName] || componentName.replace(/_/g, ' ');
                 
-                // Get short name if available
-                let shortName = abbreviations[componentName] || displayName;
+                // Get short name for mobile
+                let shortName = mobileAbbreviations[componentName] || displayName;
                 
                 // Get max marks with multiple fallbacks
                 let finalMaxMarks = componentMaxMarks[componentName] || 
@@ -1314,8 +1340,8 @@
                 
                 // Create responsive header content with both full and abbreviated names keeping max marks numbers with parentheses
                 componentHeader.innerHTML = `
-                    <div class="full-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? 'display:none;' : ''}">${displayName}</div>
-                    <div class="short-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? '' : 'display:none;'}">${shortName}</div>
+                    <div class="component-name full-name" style="${window.innerWidth <= 600 ? 'display:none;' : ''}">${displayName}</div>
+                    <div class="component-name short-name" style="${window.innerWidth <= 600 ? '' : 'display:none;'}">${shortName}</div>
                     <div class="max-marks">(${finalMaxMarks})</div>
                 `;
                 
