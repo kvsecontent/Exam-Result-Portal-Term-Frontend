@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<div class="print-button">
+                <button onclick="printResult()" style="background-color: #4CAF50;">Print Result</button>
+            </div><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -249,7 +251,7 @@
         
         .disclaimer {
             text-align: center;
-            margin: 30px auto 15px;
+            margin: 20px auto 10px;
             font-size: 12px;
             color: #666;
             border-top: 1px solid #eee;
@@ -259,6 +261,7 @@
             position: relative;
             clear: both;
             display: block;
+            page-break-inside: avoid;
         }
         
         .disclaimer p {
@@ -520,16 +523,21 @@
                 position: relative !important;
                 visibility: visible !important;
                 display: block !important;
-                margin: 30px auto 15px !important;
+                margin: 15px auto 5px !important;
                 text-align: center !important;
                 font-family: 'Times New Roman', Times, serif !important;
                 width: 90% !important;
+                padding-top: 5px !important;
+                page-break-before: avoid !important;
+                page-break-inside: avoid !important;
+                border-top: 1px solid #ccc !important;
             }
             
             .disclaimer p {
                 text-align: center !important;
                 margin: 0 auto !important;
                 width: 100% !important;
+                font-size: 10px !important;
             }
             
             .pass { color: #4CAF50 !important; }
@@ -738,10 +746,6 @@
             
             <div class="disclaimer">
                 <p style="text-align: center;"><strong>Disclaimer:</strong> kvsecontent is not responsible for any errors in the online results. These are for immediate reference only and not official mark sheets. Original mark sheets are issued separately by the Vidyalaya.</p>
-            </div>
-            
-            <div class="print-button">
-                <button onclick="printResult()" style="background-color: #4CAF50;">Print Result</button>
             </div>
         </div>
     </div>
@@ -1243,25 +1247,25 @@
                     cleanDisplayName = cleanDisplayName.split("Max Marks")[0].trim();
                 }
                 
-                // Preserve exact column names as specified
-                const exactNames = {
-                    "periodic test": "Periodic_Test",
-                    "subject enrichment": "Subject_Enrichment",
+                // Preserve exact column display names as specified
+                const displayNames = {
+                    "periodic test": "Periodic Test",
+                    "subject enrichment": "Subject Enrichment",
                     "notebook submission": "Notebook Submission",
-                    "mid term": "Mid_Term",
+                    "mid term": "Mid Term",
                     "see": "SEE",
-                    "oral skill": "Oral_Skill",
-                    "learners diary": "Learners_Diary",
+                    "oral skill": "Oral Skill",
+                    "learners diary": "Learners Diary",
                     "mdp": "MDP",
-                    "half yearly exam": "Half_Yearly_Exam",
-                    "annual exam": "Annual_Exam"
+                    "half yearly exam": "Half Yearly Exam",
+                    "annual exam": "Annual Exam"
                 };
                 
-                // Check if we should use an exact name
+                // Check if we should use a specific display name
                 const lcName = cleanDisplayName.toLowerCase();
-                Object.keys(exactNames).forEach(key => {
+                Object.keys(displayNames).forEach(key => {
                     if (lcName.includes(key)) {
-                        cleanDisplayName = exactNames[key];
+                        cleanDisplayName = displayNames[key];
                     }
                 });
                 
