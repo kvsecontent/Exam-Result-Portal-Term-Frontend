@@ -148,10 +148,11 @@
             font-size: 14px;
             min-width: 500px; /* Ensures horizontal scroll appears on small screens */
             background-color: #fff;
+            border: 2px solid #000;
         }
         
         .subjects-table th, .subjects-table td {
-            border: 1px solid #ddd;
+            border: 1px solid #000;
             padding: 8px;
             text-align: center;
             width: auto;
@@ -491,12 +492,20 @@
             .subjects-table {
                 border: 2px solid #000 !important;
                 border-collapse: collapse !important;
+                empty-cells: show !important;
             }
             
             .subjects-table th, 
             .subjects-table td {
                 border: 1px solid #000 !important;
                 padding: 3px !important;
+                box-shadow: none !important;
+                background-clip: padding-box !important;
+            }
+            
+            /* Force borders to be visible in all browsers */
+            .subjects-table tr {
+                border: 1px solid #000 !important;
             }
             
             .subjects-table th {
@@ -871,6 +880,63 @@
                             // Extract the base subject name and component
                             if (!subject.name) return;
                             
+                            // Handle special case for Periodic Test-I and Periodic Test-II
+                            if (subject.name.includes('Periodic_Test-I') || subject.name.includes('Periodic_Test-II')) {
+                                const testParts = subject.name.split('_');
+                                const baseSubjectName = testParts[0]; // The subject name
+                                
+                                // Create the base component name
+                                let componentName = '';
+                                if (subject.name.includes('Periodic_Test-I')) {
+                                    componentName = 'Periodic_Test-I';
+                                    if (subject.name.includes('_Obtained')) {
+                                        componentName = 'Periodic_Test-I';
+                                    }
+                                } else {
+                                    componentName = 'Periodic_Test-II';
+                                    if (subject.name.includes('_Obtained')) {
+                                        componentName = 'Periodic_Test-II';
+                                    }
+                                }
+                                
+                                // Skip if this is a Max_Marks field
+                                if (subject.name.includes('Max_Marks')) return;
+                                
+                                // Create the subject group if it doesn't exist
+                                if (!groupedSubjects[baseSubjectName]) {
+                                    groupedSubjects[baseSubjectName] = {
+                                        name: baseSubjectName,
+                                        maxMarks: 100,
+                                        components: {},
+                                        obtained: 0,
+                                        grade: '-',
+                                        hasData: false
+                                    };
+                                }
+                                
+                                // Get the marks from the subject data
+                                const marks = subject.obtained || 0;
+                                
+                                // Add the component to the subject
+                                if (!groupedSubjects[baseSubjectName].components[componentName]) {
+                                    groupedSubjects[baseSubjectName].components[componentName] = {
+                                        marks: marks,
+                                        displayName: componentName.replace(/_/g, ' ')
+                                    };
+                                } else {
+                                    // Update marks if this is being re-processed
+                                    groupedSubjects[baseSubjectName].components[componentName].marks = marks;
+                                }
+                                
+                                // If the component has marks > 0, add it to active components
+                                if (marks > 0) {
+                                    activeComponents.add(componentName);
+                                    groupedSubjects[baseSubjectName].hasData = true;
+                                }
+                                
+                                return; // Skip the standard processing
+                            }
+                            
                             const parts = subject.name.split('_');
                             const baseSubjectName = parts[0]; // Hindi, English, Math, etc.
                             
@@ -1186,7 +1252,11 @@
                 // Predefined max marks values per your specifications
                 const hardcodedMaxMarks = {
                     "Periodic_Test": 10,
+                    "Periodic_Test-I": 10,
+                    "Periodic_Test-II": 10,
                     "Annual_Exam_Periodic_Test": 20, // Special case for Periodic Test in Annual Exam
+                    "Annual_Exam_Periodic_Test-I": 20, // Special case for Periodic Test-I in Annual Exam
+                    "Annual_Exam_Periodic_Test-II": 20, // Special case for Periodic Test-II in Annual Exam
                     "Subject_Enrichment": 5,
                     "Notebook_Submission": 5,
                     "Mid_Term": 40,
@@ -1229,9 +1299,15 @@
                 else if (window.allComponentMaxMarks && window.allComponentMaxMarks[componentName]) {
                     finalMaxMarks = window.allComponentMaxMarks[componentName];
                 }
-                // Special case handling
-                else if (componentName === "Periodic_Test" && activeComponents.includes("Annual_Exam")) {
-                    finalMaxMarks = 20; // Periodic_Test in Annual_Exam context
+                // Check for Annual Exam context for Periodic Test variations
+                else if ((componentName === "Periodic_Test" || 
+                          componentName === "Periodic_Test-I" ||
+                          componentName === "Periodic_Test-II") && 
+                         (activeComponents.includes("Annual_Exam") || 
+                          subject.name?.includes("Annual_Exam"))) {
+                    
+                    // Show 20 marks for any Periodic Test when in Annual Exam context
+                    finalMaxMarks = 20;
                 }
                 else if (componentName === "Mid_Term" && 
                         (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
@@ -1263,7 +1339,11 @@
                 
                 // Preserve exact column display names as specified
                 const displayNames = {
-                    "periodic test": "Periodic Test",
+                    "periodic test": "Periodic Test-I",
+                    "periodic test i": "Periodic Test-I",
+                    "periodic test-i": "Periodic Test-I",
+                    "periodic test ii": "Periodic Test-II",
+                    "periodic test-ii": "Periodic Test-II",
                     "subject enrichment": "Subject Enrichment",
                     "subject enrichment activity": "Subject Enrichment Activity",
                     "notebook submission": "Notebook Submission",
@@ -1307,8 +1387,24 @@
             
             // Check if Sanskrit subject exists first
             subjects.forEach(subject => {
-                if (subject.name.toLowerCase().includes('sanskrit')) {
+                if (subject.name && subject.name.toLowerCase().includes('sanskrit')) {
                     hasSanskritSubject = true;
+                }
+                
+                // Also check for Annual Exam and Periodic Test variations
+                if (subject.components) {
+                    // Track Periodic Test variations
+                    if (subject.components["Periodic_Test-I"] || subject.components["Periodic_Test-I_Obtained"]) {
+                        window.hasPeriodicTestI = true;
+                    }
+                    if (subject.components["Periodic_Test-II"] || subject.components["Periodic_Test-II_Obtained"]) {
+                        window.hasPeriodicTestII = true;
+                    }
+                    
+                    // Track Annual Exam presence
+                    if (subject.components["Annual_Exam"] || subject.components["Annual_Exam_Obtained"]) {
+                        window.hasAnnualExam = true;
+                    }
                 }
             });
             
@@ -1353,7 +1449,7 @@
             
             // After populating the table, update the table headers if needed
             // This ensures max marks values are accurate based on subject context
-            if (hasSanskritSubject) {
+            if (hasSanskritSubject || window.hasAnnualExam) {
                 updateComponentMaxMarks();
             }
         }
@@ -1369,7 +1465,12 @@
             // Get the component headers from the second row
             const componentHeaders = headerRows[1].querySelectorAll('th');
             
-            // Update max marks for Sanskrit-specific components if needed
+            // Check if Annual Exam is present
+            const hasAnnualExam = window.hasAnnualExam || 
+                                 activeComponents.includes("Annual_Exam") ||
+                                 document.getElementById('detailedTableBody').textContent.includes("Annual Exam");
+            
+            // Update max marks for special cases
             componentHeaders.forEach(header => {
                 const headerText = header.textContent.toLowerCase();
                 
@@ -1379,6 +1480,25 @@
                     const maxMarksDiv = header.querySelector('div:nth-child(2)');
                     if (maxMarksDiv) {
                         maxMarksDiv.textContent = '(60)';
+                    }
+                }
+                
+                // Check for Periodic Test variations in Annual Exam context
+                if (hasAnnualExam) {
+                    if (headerText.includes('periodic test-i') || 
+                        headerText.includes('periodic test i')) {
+                        const maxMarksDiv = header.querySelector('div:nth-child(2)');
+                        if (maxMarksDiv) {
+                            maxMarksDiv.textContent = '(20)';
+                        }
+                    }
+                    
+                    if (headerText.includes('periodic test-ii') || 
+                        headerText.includes('periodic test ii')) {
+                        const maxMarksDiv = header.querySelector('div:nth-child(2)');
+                        if (maxMarksDiv) {
+                            maxMarksDiv.textContent = '(20)';
+                        }
                     }
                 }
             });
