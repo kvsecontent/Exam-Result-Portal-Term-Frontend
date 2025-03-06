@@ -987,24 +987,72 @@
                     
                     // Extract Max_Marks values first (before processing subjects)
                     if (data.subjects && Array.isArray(data.subjects)) {
-                        // First scan specifically for Max_Marks fields
+                        // Debug storage for raw max marks data
+                        window.debugMaxMarksData = [];
+                        
+                        // First scan specifically for Max_Marks fields - COMPLETELY REVISED for better detection
                         data.subjects.forEach(subject => {
+                            if (!subject.name) return;
+                            
+                            // Store every potential max marks field for debugging
+                            if (subject.name.includes('Max') || subject.name.includes('max')) {
+                                window.debugMaxMarksData.push({
+                                    name: subject.name,
+                                    obtained: subject.obtained,
+                                    id: subject.id
+                                });
+                            }
+                            
+                            // Standard format: Subject_Component_Max_Marks
                             if (subject.name && subject.name.includes('_Max_Marks')) {
-                                const parts = subject.name.split('_Max_Marks')[0].split('_');
-                                const baseSubjectName = parts[0]; // First part is subject name
+                                // Get the full component string before _Max_Marks
+                                const fullString = subject.name.split('_Max_Marks')[0];
+                                const parts = fullString.split('_');
+                                
+                                // First part is the subject name
+                                const baseSubjectName = parts[0];
                                 
                                 if (parts.length > 1) {
-                                    // Extract component name (everything between subject name and _Max_Marks)
-                                    const componentName = subject.name.substring(baseSubjectName.length + 1, subject.name.length - 10); // 10 is the length of "_Max_Marks"
-                                    const maxMarks = subject.obtained || 0;
+                                    // Everything after subject name and before _Max_Marks is the component name
+                                    // We rebuild it to handle components with multiple underscore parts
+                                    const componentParts = parts.slice(1);
+                                    const componentName = componentParts.join('_');
                                     
-                                    // Store max marks for this component - IMPROVED: avoid storing zero values
+                                    // Get the marks value, must be a number
+                                    const maxMarks = parseInt(subject.obtained) || 0;
+                                    
+                                    console.log(`Found Max_Marks field: ${subject.name}, Component: ${componentName}, Value: ${maxMarks}`);
+                                    
+                                    // Store if valid
                                     if (maxMarks > 0) {
                                         componentMaxMarks[componentName] = maxMarks;
-                                        console.log(`Found max marks for ${componentName}: ${maxMarks}`);
+                                        console.log(`Stored max marks for ${componentName}: ${maxMarks}`);
                                     }
                                 }
                             }
+                            
+                            // Alternative format: Subject_Component_MAX or Subject_Component_MM
+                            ['_MAX', '_MM', '_Max'].forEach(suffix => {
+                                if (subject.name.endsWith(suffix)) {
+                                    const fullString = subject.name.substring(0, subject.name.length - suffix.length);
+                                    const parts = fullString.split('_');
+                                    
+                                    if (parts.length > 1) {
+                                        const baseSubjectName = parts[0];
+                                        const componentParts = parts.slice(1);
+                                        const componentName = componentParts.join('_');
+                                        
+                                        const maxMarks = parseInt(subject.obtained) || 0;
+                                        
+                                        console.log(`Found ${suffix} field: ${subject.name}, Component: ${componentName}, Value: ${maxMarks}`);
+                                        
+                                        if (maxMarks > 0) {
+                                            componentMaxMarks[componentName] = maxMarks;
+                                            console.log(`Stored max marks for ${componentName}: ${maxMarks}`);
+                                        }
+                                    }
+                                }
+                            });
                         });
                         
                         // Now process all subjects to build the groupedSubjects object
@@ -1190,64 +1238,12 @@
             return `grade-${baseGrade}`;
         }
 
-        // IMPROVED: Enhanced dynamic abbreviation generation
+        // SIMPLIFIED: Take only first letters of each word, all uppercase
         function generateAbbreviation(componentName) {
-            // If component has underscores (multiple words)
-            if (componentName.includes('_')) {
-                // Split by underscore and take first letter of each part
-                const parts = componentName.split('_');
-                
-                // Handle common educational terms with special abbreviations
-                const specialAbbreviations = {
-                    'Periodic': 'PT',
-                    'Test': 'T',
-                    'Notebook': 'NB',
-                    'Submission': 'Sub',
-                    'Subject': 'Subj',
-                    'Enrichment': 'Enr',
-                    'Activity': 'Act',
-                    'Assessment': 'Asmt',
-                    'Practical': 'Prac',
-                    'Examination': 'Exam',
-                    'Performance': 'Perf',
-                    'Project': 'Proj',
-                    'Assignment': 'Asgn',
-                    'Evaluation': 'Eval',
-                    'Midterm': 'MT',
-                    'Semester': 'Sem'
-                };
-                
-                // Use special abbreviations if applicable, otherwise take first letter
-                return parts.map(part => {
-                    if (specialAbbreviations[part]) {
-                        return specialAbbreviations[part];
-                    }
-                    // For parts with numbers, keep the number
-                    if (/\d/.test(part)) {
-                        return part;
-                    }
-                    // Default: take first letter or first two for short words
-                    return part.length <= 3 ? part : part.charAt(0);
-                }).join('');
-            } 
-            // Some component names are already abbreviated (like MDP, Oral)
-            else if (componentName.length <= 4) {
-                return componentName;
-            } 
-            // For single words of moderate length (5-8 chars), take first two and last letter
-            else if (componentName.length <= 8) {
-                return componentName.substring(0, 2) + componentName.charAt(componentName.length - 1);
-            }
-            // For longer single words, intelligent truncation
-            else {
-                // Take first letter + any uppercase letters in the middle (for camelCase) + last letter
-                const uppercaseMatches = componentName.substring(1, componentName.length - 1).match(/[A-Z]/g);
-                if (uppercaseMatches && uppercaseMatches.length > 0) {
-                    return componentName.charAt(0) + uppercaseMatches.join('') + componentName.charAt(componentName.length - 1);
-                }
-                // Otherwise take first three letters + last letter
-                return componentName.substring(0, 3) + componentName.charAt(componentName.length - 1);
-            }
+            // Split by underscore, take first letter of each part, all uppercase
+            return componentName.split('_')
+                .map(part => part.charAt(0).toUpperCase())
+                .join('');
         }
 
         // Generate full display name from component name (enhanced to format properly)
@@ -1323,23 +1319,47 @@
                 // IMPROVED: Generate full name with proper capitalization
                 const printName = generateFullName(componentName);
                 
-                // IMPROVED: Use dynamic max marks with robust fallback system
-                // First check component-specific max marks
+                // COMPLETELY REVISED: More robust max marks detection
+                // 1. Check direct component max marks from data
                 let finalMaxMarks = componentMaxMarks[componentName];
                 
-                // If not found, check global component max marks
+                // 2. For debugging - log what we've found so far
+                console.log(`Max marks lookup for ${componentName}: direct=${finalMaxMarks}`);
+                
+                // 3. Try alternate casing/formatting of the component name
+                if (!finalMaxMarks) {
+                    // Try different casings
+                    const variations = [
+                        componentName.toUpperCase(),
+                        componentName.toLowerCase(),
+                        componentName.charAt(0).toUpperCase() + componentName.slice(1).toLowerCase()
+                    ];
+                    
+                    for (const variant of variations) {
+                        if (componentMaxMarks[variant] > 0) {
+                            finalMaxMarks = componentMaxMarks[variant];
+                            console.log(`Found max marks using variant: ${variant} = ${finalMaxMarks}`);
+                            break;
+                        }
+                    }
+                }
+                
+                // 4. If not found in direct mapping, check global component max marks
                 if (!finalMaxMarks && window.allComponentMaxMarks) {
                     finalMaxMarks = window.allComponentMaxMarks[componentName];
+                    console.log(`Global max marks for ${componentName}: ${finalMaxMarks}`);
                 }
                 
-                // If still not found, try hardcoded values
+                // 5. Try hardcoded values
                 if (!finalMaxMarks) {
                     finalMaxMarks = hardcodedMaxMarks[componentName];
+                    console.log(`Hardcoded max marks for ${componentName}: ${finalMaxMarks}`);
                 }
                 
-                // Default to 0 if all else fails
+                // 6. Default to 0 if all else fails
                 if (!finalMaxMarks) {
                     finalMaxMarks = 0;
+                    console.log(`No max marks found for ${componentName}, using default: 0`);
                 }
                 
                 // Create header content with both abbreviated and full names
