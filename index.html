@@ -466,40 +466,46 @@
                 width: 20%;
             }
             
+            /* Give more space to components, less to grade/total */
             .subjects-table th.grade-header,
             .subjects-table td:last-child {
-                width: 15%;
+                width: 12% !important; /* Reduce from 15% */
             }
             
             .subjects-table th.total-header,
             .subjects-table td:nth-last-child(2) {
-                width: 15%;
+                width: 12% !important; /* Reduce from 15% */
             }
             
+            /* Increase vertical space for component headers */
             .subjects-table th.component-header {
-                padding: 2px 1px;
+                padding: 2px 0px;
                 font-size: 9px;
-                /* Fix overlap issue by adjusting position */
-                position: relative;
-                top: 0;
+                height: 38px; /* Set fixed height to prevent overlap */
             }
             
-            /* Ensure adequate space between rows */
-            .subjects-table tr {
-                line-height: 1.5;
+            /* Add more space between header and first row */
+            #detailedTableHead tr:nth-child(2) th {
+                padding-bottom: 10px !important;
             }
             
+            /* Add padding to first row to push content down */
+            .subjects-table tbody tr:first-child td {
+                padding-top: 12px !important;
+            }
+            
+            /* Ensure component name is not too close to max marks */
             .component-name {
-                margin-bottom: 0;
+                margin-bottom: 3px !important;
+            }
+            
+            /* Better spacing for the rows */
+            .subjects-table tr {
+                line-height: 1.8 !important;
             }
             
             .max-marks {
                 font-size: 8px;
-            }
-            
-            /* Fix the position of the first row of data cells */
-            .subjects-table tbody tr:first-child td {
-                padding-top: 8px;
             }
             
             .component-weight {
@@ -538,7 +544,7 @@
             /* Make second row of headers sticky too */
             #detailedTableHead tr:nth-child(2) th {
                 position: sticky;
-                top: 31px; /* Height of the first header row */
+                top: 32px; /* Adjusted to match header height */
                 background-color: #f5f5f5;
                 z-index: 10;
             }
