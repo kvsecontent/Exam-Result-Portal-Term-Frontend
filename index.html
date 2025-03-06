@@ -21,6 +21,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Results Portal</title>
     <style>
+        /* Hide any leaked code at the top of the page */
+        body > *:not(.container):not(#debug-info):not(script):not(style) {
+            display: none !important;
+        }
+        
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f5f5f5;
@@ -863,7 +868,8 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-            // Create an invisible debug div to help diagnose issues
+        // Create an invisible debug div to help diagnose issues
+        document.addEventListener('DOMContentLoaded', function() {
             const debugDiv = document.createElement('div');
             debugDiv.id = 'debug-info';
             debugDiv.style.display = 'none';
@@ -882,15 +888,15 @@
             };
             
             // Track API response time to determine if server is "cold"
-        let apiResponseStart = 0;
-        let isFirstFetch = true;
-        let isServerCold = false;
-        
-        // Flag to check if we need detailed view or not
-        let useDetailedView = false;
-        
-        async function fetchDataFromBackend(rollNumber) {
-            try {
+            let apiResponseStart = 0;
+            let isFirstFetch = true;
+            let isServerCold = false;
+            
+            // Flag to check if we need detailed view or not
+            let useDetailedView = false;
+            
+            async function fetchDataFromBackend(rollNumber) {
+                try {
                 // Start timing the API response
                 apiResponseStart = Date.now();
                 
