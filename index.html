@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Results Portal</title>
     <style>
-        /* Hide any leaked code at the top of the page */
-        body > *:not(.container):not(#debug-info):not(script):not(style) {
-            display: none !important;
-        }
-        
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f5f5f5;
@@ -134,6 +129,7 @@
             margin: 5px 0;
         }
         
+        /* Table containers with horizontal scroll on mobile */
         #simpleTableContainer, #detailedTableContainer {
             width: 100%;
             overflow-x: auto;
@@ -143,33 +139,6 @@
             background-color: #fff;
             border: 1px solid #eee;
             margin-bottom: 15px;
-            /* Prevent flash and rendering issues */
-            -webkit-transform: translate3d(0,0,0);
-            transform: translate3d(0,0,0);
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-        }
-        
-        /* Uniform background for all scrollable areas */
-        .subjects-table, 
-        .subjects-table th, 
-        .subjects-table td,
-        #simpleTableContainer,
-        #detailedTableContainer {
-            background-color: #fff;
-        }
-        
-        /* Remove default webkit scrollbar styling */
-        #simpleTableContainer::-webkit-scrollbar, 
-        #detailedTableContainer::-webkit-scrollbar {
-            height: 6px;
-            background-color: #f5f5f5;
-        }
-        
-        #simpleTableContainer::-webkit-scrollbar-thumb, 
-        #detailedTableContainer::-webkit-scrollbar-thumb {
-            background-color: #3f51b5;
-            border-radius: 3px;
         }
         
         .subjects-table {
@@ -317,15 +286,19 @@
             border-radius: 3px;
         }
         
-        /*  Fix the JavaScript comment issue at the top of the page */
-        script {
-            display: none !important;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        /* Mobile scroll indicator */
+        .scroll-indicator {
+            display: none;
+            text-align: center;
+            margin: 0;
+            padding: 3px 0;
+            color: #3f51b5;
+            font-size: 12px;
+            background-color: rgba(255,255,255,0.9);
+            position: sticky;
+            left: 0;
+            width: 100%;
+            z-index: 1;
         }
         
         /* Skeleton loading animation */
@@ -487,23 +460,6 @@
             .component-weight {
                 font-size: 8px;
             }
-            
-            #simpleTableContainer, #detailedTableContainer {
-                position: relative;
-                margin-bottom: 15px;
-                border: 1px solid #eee;
-                border-radius: 5px;
-                -webkit-backface-visibility: hidden;
-                backface-visibility: hidden;
-                transform: translateZ(0);
-                will-change: transform;
-                overflow-x: auto !important; /* Ensure scrolling is enabled */
-            }
-            
-            /* Fade effect removed for cleaner scrolling */
-            #simpleTableContainer::after, #detailedTableContainer::after {
-                display: none;
-            }
         }
         
         /* Basic portrait print styles */
@@ -531,8 +487,22 @@
                 border: 1px solid #000 !important;
             }
             
-            .subjects-table th, .subjects-table td {
+            /* Strong borders for tables */
+            .subjects-table {
+                border: 2px solid #000 !important;
+                border-collapse: collapse !important;
+            }
+            
+            .subjects-table th, 
+            .subjects-table td {
                 border: 1px solid #000 !important;
+                padding: 3px !important;
+            }
+            
+            .subjects-table th {
+                background-color: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             .total-section, .result-section {
@@ -558,10 +528,8 @@
                 text-align: center !important;
                 font-family: 'Times New Roman', Times, serif !important;
                 width: 90% !important;
-                padding-top: 5px !important;
                 page-break-before: avoid !important;
                 page-break-inside: avoid !important;
-                border-top: 1px solid #ccc !important;
             }
             
             .disclaimer p {
@@ -574,77 +542,24 @@
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
             
-            /* Hide scrolling elements and make tables full width */
-            #simpleTableContainer, #detailedTableContainer {
-                overflow: visible !important;
-                width: 100% !important;
-                border: none !important;
-            }
-            
-            /* Hide scroll indicator */
+            /* Hide scroll indicators when printing */
             .scroll-indicator {
                 display: none !important;
             }
             
-            /* Hide scroll gradient */
-            #simpleTableContainer::after, #detailedTableContainer::after {
-                display: none !important;
-            }
-            
-            /* Ensure tables fit within the printable area and have visible borders */
-            .subjects-table {
+            /* Scrolling containers should display their full content */
+            #simpleTableContainer, #detailedTableContainer {
+                overflow: visible !important;
+                border: none !important;
+                position: static !important;
+                transform: none !important;
                 width: 100% !important;
-                min-width: auto !important;
-                table-layout: fixed !important;
-                font-size: 10px !important;
-                border-collapse: collapse !important;
-                border: 2px solid #000 !important;
-            }
-            
-            /* Adjust cell sizes for printing with strong visible borders */
-            .subjects-table th, .subjects-table td {
-                padding: 4px 2px !important;
-                word-break: break-word !important;
-                overflow-wrap: break-word !important;
-                white-space: normal !important;
-                max-width: 70px !important;
-                height: 18px !important;
-                line-height: 1.3 !important;
-                border: 1px solid #000 !important;
-            }
-            
-            /* Header cells */
-            .subjects-table th {
-                height: 22px !important;
-                vertical-align: middle !important;
-            }
-            
-            /* Component header cells with values */
-            .subjects-table th.component-header div:last-child {
-                margin: 2px 0 !important;
-                line-height: 1.2 !important;
-            }
-            
-            /* First column adjustments */
-            .subjects-table th:first-child, .subjects-table td:first-child {
-                width: 15% !important;
-            }
-            
-            /* Component column adjustments */
-            .subjects-table th.component-header {
-                width: auto !important;
-                min-width: auto !important;
-                max-width: none !important;
-            }
-            
-            /* Total and Grade column adjustments */
-            .subjects-table th.total-header, .subjects-table th.grade-header {
-                width: 10% !important;
+                margin: 0 !important;
             }
             
             @page {
                 size: portrait;
-                margin: 10mm;
+                margin: 5mm;
             }
         }
         
@@ -853,34 +768,33 @@
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
         // Create an invisible debug div to help diagnose issues
-        document.addEventListener('DOMContentLoaded', function() {
-            const debugDiv = document.createElement('div');
-            debugDiv.id = 'debug-info';
-            debugDiv.style.display = 'none';
-            debugDiv.innerHTML = `
-                <h3>Debug Information</h3>
-                <pre id="debug-content"></pre>
-            `;
-            document.body.appendChild(debugDiv);
-            
-            // Helper function to add debug info
-            window.addDebug = (text) => {
-                const debugContent = document.getElementById('debug-content');
-                if (debugContent) {
-                    debugContent.textContent += text + '\n';
-                }
-            };
-            
-            // Track API response time to determine if server is "cold"
-            let apiResponseStart = 0;
-            let isFirstFetch = true;
-            let isServerCold = false;
-            
-            // Flag to check if we need detailed view or not
-            let useDetailedView = false;
-            
-            async function fetchDataFromBackend(rollNumber) {
-                try {
+        const debugDiv = document.createElement('div');
+        debugDiv.id = 'debug-info';
+        debugDiv.style.display = 'none';
+        debugDiv.innerHTML = `
+            <h3>Debug Information</h3>
+            <pre id="debug-content"></pre>
+        `;
+        document.body.appendChild(debugDiv);
+        
+        // Helper function to add debug info
+        window.addDebug = (text) => {
+            const debugContent = document.getElementById('debug-content');
+            if (debugContent) {
+                debugContent.textContent += text + '\n';
+            }
+        };
+        
+        // Track API response time to determine if server is "cold"
+        let apiResponseStart = 0;
+        let isFirstFetch = true;
+        let isServerCold = false;
+        
+        // Flag to check if we need detailed view or not
+        let useDetailedView = false;
+        
+        async function fetchDataFromBackend(rollNumber) {
+            try {
                 // Start timing the API response
                 apiResponseStart = Date.now();
                 
@@ -1287,11 +1201,24 @@
                     "Annual_Exam": 50,
                     "Oral": 20
                 };
-
+                
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
                 
-                // Determine max marks based on component name and context
+                // Split long component names onto multiple lines
+                let formattedName = displayName;
+                
+                // If the name has spaces and is longer than 10 characters, split at space
+                if (displayName.includes(' ') && displayName.length > 10) {
+                    // Split at a space character, preferably near the middle
+                    const words = displayName.split(' ');
+                    if (words.length >= 2) {
+                        // If there are at least 2 words, join them with line breaks
+                        formattedName = words.join('<br>');
+                    }
+                }
+                
+                // Set default max marks based on component name and special cases
                 let finalMaxMarks = 0;
                 
                 // First check if we have actual data from API
@@ -1311,6 +1238,10 @@
                          document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
                     finalMaxMarks = 60; // Mid_Term for Sanskrit subject
                 }
+                // Special handling for SEE component
+                else if (componentName.includes("SEE")) {
+                    finalMaxMarks = 40;
+                }
                 // Standard hardcoded values
                 else if (hardcodedMaxMarks[componentName]) {
                     finalMaxMarks = hardcodedMaxMarks[componentName];
@@ -1321,23 +1252,6 @@
                     const baseComponent = componentName.split("_Max_Marks")[0];
                     if (hardcodedMaxMarks[baseComponent]) {
                         finalMaxMarks = hardcodedMaxMarks[baseComponent];
-                    }
-                }
-                // Special handling for SEE component
-                if (componentName.includes("SEE") && !finalMaxMarks) {
-                    finalMaxMarks = 40;
-                }
-                
-                // Split long component names onto multiple lines
-                let formattedName = displayName;
-                
-                // If the name has spaces and is longer than 10 characters, split at space
-                if (displayName.includes(' ') && displayName.length > 10) {
-                    // Split at a space character, preferably near the middle
-                    const words = displayName.split(' ');
-                    if (words.length >= 2) {
-                        // If there are at least 2 words, join them with line breaks
-                        formattedName = words.join('<br>');
                     }
                 }
                 
@@ -1370,7 +1284,7 @@
                     }
                 });
                 
-                // Use a more standardized display format showing component name and max marks
+                // Use a cleaner, more standardized display format showing component name and max marks
                 componentHeader.innerHTML = `
                     <div style="margin:0; padding:0;">${cleanDisplayName}</div>
                     <div style="margin:3px 0; padding:2px; color:#444; display:block !important; width:auto; text-align:center; font-weight:bold; font-size:13px;">(${finalMaxMarks})</div>
@@ -1382,36 +1296,6 @@
             // Add headers to the table
             tableHead.appendChild(headerRow1);
             tableHead.appendChild(headerRow2);
-        }
-
-        function populateSimpleTable(subjects) {
-            const tableBody = document.getElementById('simpleTableBody');
-            tableBody.innerHTML = '';
-            
-            // Add subject rows to the simple table
-            subjects.forEach(subject => {
-                const row = document.createElement('tr');
-                
-                const nameCell = document.createElement('td');
-                nameCell.textContent = subject.name;
-                
-                const maxMarksCell = document.createElement('td');
-                maxMarksCell.textContent = subject.maxMarks;
-                
-                const obtainedCell = document.createElement('td');
-                obtainedCell.textContent = subject.obtained || '0';
-                
-                const gradeCell = document.createElement('td');
-                gradeCell.textContent = subject.grade;
-                gradeCell.className = getGradeClass(subject.grade);
-                
-                row.appendChild(nameCell);
-                row.appendChild(maxMarksCell);
-                row.appendChild(obtainedCell);
-                row.appendChild(gradeCell);
-                
-                tableBody.appendChild(row);
-            });
         }
 
         function populateDetailedTable(subjects, activeComponents) {
@@ -1497,6 +1381,36 @@
                         maxMarksDiv.textContent = '(60)';
                     }
                 }
+            });
+        }
+
+        function populateSimpleTable(subjects) {
+            const tableBody = document.getElementById('simpleTableBody');
+            tableBody.innerHTML = '';
+            
+            // Add subject rows to the simple table
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                
+                const nameCell = document.createElement('td');
+                nameCell.textContent = subject.name;
+                
+                const maxMarksCell = document.createElement('td');
+                maxMarksCell.textContent = subject.maxMarks;
+                
+                const obtainedCell = document.createElement('td');
+                obtainedCell.textContent = subject.obtained || '0';
+                
+                const gradeCell = document.createElement('td');
+                gradeCell.textContent = subject.grade;
+                gradeCell.className = getGradeClass(subject.grade);
+                
+                row.appendChild(nameCell);
+                row.appendChild(maxMarksCell);
+                row.appendChild(obtainedCell);
+                row.appendChild(gradeCell);
+                
+                tableBody.appendChild(row);
             });
         }
 
