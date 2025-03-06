@@ -482,6 +482,45 @@
             }
         }
         
+        /* Add sticky headers for mobile view */
+        @media (max-width: 600px) {
+            /* Make first row of headers sticky */
+            #detailedTableHead tr:first-child th,
+            #simpleTable thead tr th {
+                position: sticky;
+                top: 0;
+                background-color: #f5f5f5;
+                z-index: 10;
+                border-bottom: 2px solid #ddd;
+            }
+            
+            /* Make second row of headers sticky too */
+            #detailedTableHead tr:nth-child(2) th {
+                position: sticky;
+                top: 31px; /* Height of the first header row */
+                background-color: #f5f5f5;
+                z-index: 10;
+            }
+            
+            /* Make subject column sticky on left */
+            #detailedTable tbody tr td:first-child,
+            #simpleTable tbody tr td:first-child {
+                position: sticky;
+                left: 0;
+                background-color: #fff;
+                z-index: 5;
+                border-right: 2px solid #ddd;
+            }
+            
+            /* When both row and column are sticky */
+            #detailedTableHead tr th:first-child,
+            #simpleTable thead tr th:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 15; /* Higher than other sticky elements */
+            }
+        }
+        
         /* Basic portrait print styles */
         @media print {
             body * {
@@ -545,9 +584,45 @@
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
             
+            /* Override mobile abbreviations in print mode */
+            .short-name {
+                display: none !important;
+            }
+            
+            .full-name {
+                display: block !important;
+            }
+            
+            /* Adjust sizes for better fit */
+            .subjects-table th, .subjects-table td {
+                font-size: 9pt !important;
+                padding: 4pt !important;
+            }
+            
+            /* Ensure disclaimer stays on first page */
+            .disclaimer {
+                position: relative !important;
+                margin-top: 15pt !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+            }
+            
+            /* Reduce overall spacing to fit more content on one page */
+            .student-info, .school-info, .exam-info, .summary, .signature-section {
+                margin-bottom: 8pt !important;
+            }
+            
+            /* Adjust page margins */
             @page {
                 size: portrait;
-                margin: 10mm;
+                margin: 8mm !important;
+            }
+            
+            /* Force background colors and borders to print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         
@@ -569,7 +644,17 @@
             
             @page {
                 size: landscape;
-                margin: 10mm;
+                margin: 8mm;
+            }
+            
+            /* Make component columns wider in landscape */
+            .subjects-table th.component-header {
+                min-width: 55pt !important;
+            }
+            
+            /* Ensure the disclaimer stays on the first page */
+            .disclaimer {
+                margin-top: 10pt !important;
             }
         }
     </style>
@@ -1124,6 +1209,9 @@
             resultStatus.textContent = data.result;
             resultStatus.className = data.result === 'PASS' || data.result === 'Pass' ? 'pass' : 'fail';
             
+            // Update responsive display
+            updateResponsiveDisplay();
+            
             // Reset scroll position for mobile tables
             if (window.innerWidth <= 600) {
                 const tableResponsive = document.querySelectorAll('.table-responsive');
@@ -1148,7 +1236,7 @@
             
             // Components columns (colspan=activeComponents.length)
             const componentsHeader = document.createElement('th');
-            componentsHeader.textContent = 'Assessment';
+            componentsHeader.textContent = 'Assessment Components';
             componentsHeader.setAttribute('colspan', activeComponents.length);
             headerRow1.appendChild(componentsHeader);
             
@@ -1174,6 +1262,7 @@
             activeComponents.forEach(componentName => {
                 const componentHeader = document.createElement('th');
                 componentHeader.className = "component-header";
+                componentHeader.setAttribute('data-component', componentName);
                 
                 // Hardcode fallback max marks for standard components
                 const hardcodedMaxMarks = {
@@ -1198,7 +1287,7 @@
                 // Get display name by replacing underscores with spaces
                 const displayName = componentName.replace(/_/g, ' ');
                 
-                // Get short name if available or create one
+                // Get short name if available
                 let shortName = abbreviations[componentName] || displayName;
                 
                 // Get max marks with multiple fallbacks
@@ -1206,18 +1295,12 @@
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Create responsive header content with abbreviated names for small screens
-                if (window.innerWidth <= 600) {
-                    componentHeader.innerHTML = `
-                        <div style="margin:0; padding:0;">${shortName}</div>
-                        <div style="margin:2px 0; font-size:9px; color:#777;">(${finalMaxMarks})</div>
-                    `;
-                } else {
-                    componentHeader.innerHTML = `
-                        <div style="margin:0; padding:0;">${displayName}</div>
-                        <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:13px;">(${finalMaxMarks})</div>
-                    `;
-                }
+                // Create responsive header content with both full and abbreviated names
+                componentHeader.innerHTML = `
+                    <div class="full-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? 'display:none;' : ''}">${displayName}</div>
+                    <div class="short-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? '' : 'display:none;'}">${shortName}</div>
+                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:11px;">(${finalMaxMarks})</div>
+                `;
                 
                 headerRow2.appendChild(componentHeader);
             });
@@ -1225,6 +1308,22 @@
             // Add headers to the table
             tableHead.appendChild(headerRow1);
             tableHead.appendChild(headerRow2);
+        }
+
+        function updateResponsiveDisplay() {
+            const isMobile = window.innerWidth <= 600;
+            
+            // Show/hide appropriate header text based on screen size
+            const fullNames = document.querySelectorAll('.full-name');
+            const shortNames = document.querySelectorAll('.short-name');
+            
+            fullNames.forEach(el => {
+                el.style.display = isMobile ? 'none' : 'block';
+            });
+            
+            shortNames.forEach(el => {
+                el.style.display = isMobile ? 'block' : 'none';
+            });
         }
 
         function populateSimpleTable(subjects) {
@@ -1336,6 +1435,18 @@
                 return;
             }
             
+            // Always show full component names when printing
+            const fullNames = document.querySelectorAll('.full-name');
+            const shortNames = document.querySelectorAll('.short-name');
+            
+            fullNames.forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            shortNames.forEach(el => {
+                el.style.display = 'none';
+            });
+            
             // Check if we need landscape mode (for detailed table)
             const detailedTable = document.getElementById('detailedTableContainer');
             if (detailedTable.style.display !== 'none') {
@@ -1346,6 +1457,9 @@
             
             // Print the page
             window.print();
+            
+            // Restore responsive display after printing
+            updateResponsiveDisplay();
         }
         
         // Add event listener for Enter key on roll number input
@@ -1357,20 +1471,8 @@
         
         // Check screen size on load and resize
         window.addEventListener('resize', function() {
-            // Update header display based on screen size
-            if (document.getElementById('detailedTableHead').innerHTML !== '') {
-                // If detailed table is populated, update headers
-                const activeComponents = [];
-                const componentHeaders = document.querySelectorAll('.component-header');
-                componentHeaders.forEach(header => {
-                    activeComponents.push(header.getAttribute('data-component'));
-                });
-                
-                // If we have active components data, refresh the headers
-                if (activeComponents.length > 0) {
-                    createDetailedTableHeaders(activeComponents, {});
-                }
-            }
+            // Update responsive display
+            updateResponsiveDisplay();
         });
     </script>
 </body>
