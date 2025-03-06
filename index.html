@@ -129,11 +129,19 @@
             margin: 5px 0;
         }
         
+        /* Table containers with horizontal scroll on mobile */
+        #simpleTableContainer, #detailedTableContainer {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Better scrolling on iOS */
+        }
+        
         .subjects-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
             font-size: 14px;
+            min-width: 500px; /* Ensures horizontal scroll appears on small screens */
         }
         
         .subjects-table th, .subjects-table td {
@@ -267,6 +275,22 @@
             background-color: #f7f7f7;
             padding: 1px 3px;
             border-radius: 3px;
+        }
+        
+        /* Mobile scroll indicator */
+        .scroll-indicator {
+            display: none;
+            text-align: center;
+            margin: 5px 0;
+            color: #3f51b5;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
         
         /* Skeleton loading animation */
@@ -410,16 +434,41 @@
                 margin-left: 0;
             }
             
+            /* Show horizontal scroll indicators on mobile */
+            .scroll-indicator {
+                display: block;
+            }
+            
+            /* Table styles for mobile */
             .subjects-table {
-                font-size: 10px;
+                font-size: 12px;
             }
             
             .subjects-table th, .subjects-table td {
-                padding: 3px;
+                padding: 4px;
+                white-space: nowrap;
             }
             
             .component-weight {
                 font-size: 8px;
+            }
+            
+            #simpleTableContainer, #detailedTableContainer {
+                position: relative;
+                margin-bottom: 15px;
+                border: 1px solid #eee;
+                border-radius: 5px;
+            }
+            
+            #simpleTableContainer::after, #detailedTableContainer::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 20px;
+                height: 100%;
+                background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%);
+                pointer-events: none;
             }
         }
         
@@ -485,6 +534,11 @@
             
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
+            
+            /* Hide scroll indicators when printing */
+            .scroll-indicator {
+                display: none !important;
+            }
             
             @page {
                 size: portrait;
@@ -625,8 +679,11 @@
                 <p><strong>Exam:</strong> <span id="examName">Final Term</span></p>
             </div>
             
-            <!-- Default table with simple columns (will be replaced with detailed one if needed) -->
+            <!-- Simple table view -->
             <div id="simpleTableContainer">
+                <div class="scroll-indicator">
+                    <span>← Swipe to view complete table →</span>
+                </div>
                 <table class="subjects-table" id="simpleTable">
                     <thead>
                         <tr>
@@ -642,8 +699,11 @@
                 </table>
             </div>
             
-            <!-- Detailed table with assessment components (initially hidden) -->
+            <!-- Detailed table view -->
             <div id="detailedTableContainer" style="display: none;">
+                <div class="scroll-indicator">
+                    <span>← Swipe to view complete table →</span>
+                </div>
                 <table class="subjects-table" id="detailedTable">
                     <!-- Table headers will be created dynamically -->
                     <thead id="detailedTableHead">
