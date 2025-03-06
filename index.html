@@ -481,31 +481,45 @@
             .subjects-table th.component-header {
                 padding: 2px 0px;
                 font-size: 9px;
-                height: 38px; /* Set fixed height to prevent overlap */
+                height: 42px; /* Increased height to prevent overlap */
             }
             
             /* Add more space between header and first row */
             #detailedTableHead tr:nth-child(2) th {
-                padding-bottom: 10px !important;
+                padding-bottom: 12px !important;
             }
             
-            /* Add padding to first row to push content down */
+            /* Add significant padding to first row to push content down */
             .subjects-table tbody tr:first-child td {
-                padding-top: 12px !important;
+                padding-top: 18px !important;
             }
             
             /* Ensure component name is not too close to max marks */
             .component-name {
-                margin-bottom: 3px !important;
+                margin-bottom: 4px !important;
             }
             
             /* Better spacing for the rows */
             .subjects-table tr {
-                line-height: 1.8 !important;
+                line-height: 2 !important;
             }
             
+            /* Make sticky headers work better with these adjustments */
+            #detailedTableHead tr:nth-child(2) th {
+                position: sticky;
+                top: 32px; /* Adjusted to match header height */
+            }
+            
+            /* Add bottom border to headers to visually separate from data */
+            #detailedTableHead tr:nth-child(2) th {
+                border-bottom: 2px solid #ddd !important;
+            }
+            
+            /* Make marks display more compact to fit better */
             .max-marks {
                 font-size: 8px;
+                line-height: 1;
+                margin-top: 2px;
             }
             
             .component-weight {
