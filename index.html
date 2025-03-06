@@ -151,11 +151,25 @@
             width: auto;
         }
         
-        /* Make all component columns equal width */
+        /* Fix component header display */
         .subjects-table th.component-header {
-            width: 80px; /* Fixed width for components */
-            min-width: 80px;
-            max-width: 100px;
+            width: 40px; /* Smaller fixed width for components */
+            min-width: 40px;
+            max-width: 50px;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        /* Keep max marks numbers on same line as parentheses */
+        .max-marks {
+            white-space: nowrap;
+            display: inline-block;
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+            text-align: center;
+            font-weight: normal;
         }
         
         .subjects-table th:first-child { /* Subject column */
@@ -450,9 +464,12 @@
             }
             
             .subjects-table th.component-header {
-                width: auto;
-                min-width: 40px;
-                max-width: 60px;
+                padding: 3px 1px;
+                font-size: 10px;
+            }
+            
+            .max-marks {
+                font-size: 9px;
             }
             
             /* Handle long component names better */
@@ -1245,7 +1262,7 @@
             totalHeader.textContent = 'Total';
             totalHeader.setAttribute('rowspan', '2');
             totalHeader.className = "total-header";
-            totalHeader.innerHTML = 'Total<br>(100)';
+            totalHeader.innerHTML = 'Total<br><span class="max-marks">(100)</span>';
             headerRow1.appendChild(totalHeader);
             
             // Grade column (rowspan=2)
@@ -1295,11 +1312,11 @@
                                    (window.allComponentMaxMarks ? window.allComponentMaxMarks[componentName] : null) ||
                                    hardcodedMaxMarks[componentName] || 0;
                 
-                // Create responsive header content with both full and abbreviated names
+                // Create responsive header content with both full and abbreviated names keeping max marks numbers with parentheses
                 componentHeader.innerHTML = `
                     <div class="full-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? 'display:none;' : ''}">${displayName}</div>
                     <div class="short-name" style="margin:0; padding:0; ${window.innerWidth <= 600 ? '' : 'display:none;'}">${shortName}</div>
-                    <div style="margin:3px 0; padding:2px; color:#888; display:block !important; width:auto; text-align:center; font-weight:normal; font-size:11px;">(${finalMaxMarks})</div>
+                    <div class="max-marks">(${finalMaxMarks})</div>
                 `;
                 
                 headerRow2.appendChild(componentHeader);
