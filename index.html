@@ -541,9 +541,27 @@
             .pass { color: #4CAF50 !important; }
             .fail { color: #F44336 !important; }
             
-            /* Hide scroll indicators when printing */
+            /* Hide scrolling elements and make tables full width */
+            #simpleTableContainer, #detailedTableContainer {
+                overflow: visible !important;
+                width: 100% !important;
+                border: none !important;
+            }
+            
+            /* Hide scroll indicator */
             .scroll-indicator {
                 display: none !important;
+            }
+            
+            /* Hide scroll gradient */
+            #simpleTableContainer::after, #detailedTableContainer::after {
+                display: none !important;
+            }
+            
+            /* Ensure tables take full width */
+            .subjects-table {
+                width: 100% !important;
+                min-width: auto !important;
             }
             
             @page {
