@@ -558,10 +558,38 @@
                 display: none !important;
             }
             
-            /* Ensure tables take full width */
+            /* Ensure tables fit within the printable area */
             .subjects-table {
                 width: 100% !important;
                 min-width: auto !important;
+                table-layout: fixed !important;
+                font-size: 9px !important;
+            }
+            
+            /* Adjust cell sizes for printing */
+            .subjects-table th, .subjects-table td {
+                padding: 2px !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
+                white-space: normal !important;
+                max-width: 70px !important;
+            }
+            
+            /* First column adjustments */
+            .subjects-table th:first-child, .subjects-table td:first-child {
+                width: 15% !important;
+            }
+            
+            /* Component column adjustments */
+            .subjects-table th.component-header {
+                width: auto !important;
+                min-width: auto !important;
+                max-width: none !important;
+            }
+            
+            /* Total and Grade column adjustments */
+            .subjects-table th.total-header, .subjects-table th.grade-header {
+                width: 10% !important;
             }
             
             @page {
