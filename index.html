@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+// Default value if nothing else matches
+                else {
+                    finalMaxMarks = 0;
+                }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1242,6 +1245,7 @@
                     "Mid_Term": 40,
                     "Sanskrit_Mid_Term": 60, // Special case for Sanskrit
                     "SEE": 40,
+                    "Subject_Enrichment_Activity": 5, // Alternative name
                     "Oral_Skill": 20,
                     "Learner_Diary": 10,
                     "Learners_Diary": 10, // Alternative spelling
@@ -1286,9 +1290,9 @@
                         finalMaxMarks = hardcodedMaxMarks[baseComponent];
                     }
                 }
-                // Default value if nothing else matches
-                else {
-                    finalMaxMarks = 0;
+                // Special handling for SEE component
+                if (componentName.includes("SEE") && !finalMaxMarks) {
+                    finalMaxMarks = 40;
                 }
                 
                 // Split long component names onto multiple lines
@@ -1314,6 +1318,7 @@
                 const displayNames = {
                     "periodic test": "Periodic Test",
                     "subject enrichment": "Subject Enrichment",
+                    "subject enrichment activity": "Subject Enrichment Activity",
                     "notebook submission": "Notebook Submission",
                     "mid term": "Mid Term",
                     "see": "SEE",
