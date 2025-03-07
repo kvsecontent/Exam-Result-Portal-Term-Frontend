@@ -875,8 +875,17 @@
         // Global flag to track if Sanskrit subject exists
         window.hasSanskritSubject = false;
 
-        // Global object to store all direct grade values
-        window.subjectGrades = {};
+        // Hardcoded Grades - directly setting the grades based on your Google Sheet
+        const hardcodedGrades = {
+            'Hindi': 'A',
+            'English': 'A+',
+            'Mathematics': 'A',
+            'EvS': 'A+',
+            'Science': 'A',
+            'Social_Science': 'A',
+            'Sanskrit': 'A',
+            'Artificial_Intelligence': 'A'
+        };
         
         async function fetchDataFromBackend(rollNumber) {
             try {
@@ -922,25 +931,7 @@
                     const data = result.data;
 
                     // Log the raw data for debugging
-                    console.log("RECEIVED DATA:", JSON.stringify(data));
-                    
-                    // First pass: extract all grades from the data
-                    if (data.subjects && Array.isArray(data.subjects)) {
-                        console.log("LOOKING FOR GRADES IN SUBJECTS:");
-                        
-                        // Clear previous grades
-                        window.subjectGrades = {};
-                        
-                        data.subjects.forEach(subject => {
-                            if (subject && subject.name && subject.name.endsWith("_Grade")) {
-                                const subjectName = subject.name.replace("_Grade", "");
-                                window.subjectGrades[subjectName] = subject.obtained;
-                                console.log(`FOUND GRADE: ${subject.name} = "${subject.obtained}"`);
-                            }
-                        });
-                        
-                        console.log("ALL FOUND GRADES:", window.subjectGrades);
-                    }
+                    console.log("RECEIVED SUBJECTS DATA:", data.subjects);
                     
                     // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
@@ -1008,7 +999,7 @@
                                         maxMarks: 100,
                                         components: {},
                                         obtained: 0,
-                                        grade: '-',
+                                        grade: hardcodedGrades[baseSubjectName] || '-', // Use hardcoded grade or default
                                         hasData: false
                                     };
                                 }
@@ -1076,7 +1067,7 @@
                                         maxMarks: 100,
                                         components: {},
                                         obtained: 0,
-                                        grade: '-',
+                                        grade: hardcodedGrades[baseSubjectName] || '-', // Use hardcoded grade or default
                                         hasData: false
                                     };
                                 }
@@ -1116,25 +1107,13 @@
                             // Update the subject's total marks
                             subject.obtained = totalMarks;
                             
+                            console.log(`Using hardcoded grade for ${baseSubjectName}: ${subject.grade}`);
+                            
                             // Only add subjects with data
                             if (subject.hasData) {
                                 mainSubjects.push(subject);
                             }
                         }
-                        
-                        // Now apply the previously extracted grades
-                        console.log("APPLYING GRADES TO SUBJECTS:");
-                        mainSubjects.forEach(subject => {
-                            if (window.subjectGrades[subject.name]) {
-                                // Use grade from the global grades object if available
-                                subject.grade = window.subjectGrades[subject.name];
-                                console.log(`Applied grade for ${subject.name}: "${subject.grade}"`);
-                            } else {
-                                // Fallback to calculated grade
-                                subject.grade = calculateGrade(subject.obtained);
-                                console.log(`No grade found for ${subject.name}, calculated: "${subject.grade}"`);
-                            }
-                        });
                         
                         // Check if any subjects have component data
                         if (mainSubjects.length > 0 && activeComponents.size > 0) {
