@@ -845,10 +845,6 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
-        // Google Sheets configuration
-        // Replace with your published Google Sheet URL
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/YOUR_SHEET_ID/pub?output=csv';
-        
         // Create an invisible debug div to help diagnose issues
         const debugDiv = document.createElement('div');
         debugDiv.id = 'debug-info';
@@ -878,72 +874,6 @@
         // Global flag to track if Sanskrit subject exists
         window.hasSanskritSubject = false;
         
-        // Cache for grades from Google Sheets
-        let gradeCache = null;
-        
-        // Function to fetch grades from Google Sheet
-        async function fetchGradesFromGoogleSheet() {
-            try {
-                // If grades are already cached, return them
-                if (gradeCache) {
-                    return gradeCache;
-                }
-                
-                // Fetch the published CSV from Google Sheets
-                const response = await fetch(GOOGLE_SHEET_URL);
-                
-                if (!response.ok) {
-                    console.error('Failed to fetch Google Sheet data');
-                    return {};
-                }
-                
-                const csvText = await response.text();
-                
-                // Parse CSV data
-                const rows = csvText.split('\n');
-                const headers = rows[0].split(',');
-                
-                // Find column indices
-                const rollIndex = headers.findIndex(h => h.toLowerCase().includes('roll'));
-                const subjectIndex = headers.findIndex(h => h.toLowerCase().includes('subject'));
-                const gradeIndex = headers.findIndex(h => h.toLowerCase().includes('grade'));
-                
-                if (rollIndex === -1 || subjectIndex === -1 || gradeIndex === -1) {
-                    console.error('Required columns not found in Google Sheet');
-                    return {};
-                }
-                
-                // Process data rows
-                const grades = {};
-                
-                for (let i = 1; i < rows.length; i++) {
-                    if (!rows[i].trim()) continue;
-                    
-                    const columns = rows[i].split(',');
-                    if (columns.length <= Math.max(rollIndex, subjectIndex, gradeIndex)) continue;
-                    
-                    const rollNumber = columns[rollIndex].trim();
-                    const subject = columns[subjectIndex].trim();
-                    const grade = columns[gradeIndex].trim();
-                    
-                    if (!rollNumber || !subject || !grade) continue;
-                    
-                    if (!grades[rollNumber]) {
-                        grades[rollNumber] = {};
-                    }
-                    
-                    grades[rollNumber][subject] = grade;
-                }
-                
-                // Cache the grades
-                gradeCache = grades;
-                return grades;
-            } catch (error) {
-                console.error('Error fetching grades from Google Sheet:', error);
-                return {};
-            }
-        }
-        
         async function fetchDataFromBackend(rollNumber) {
             try {
                 // Start timing the API response
@@ -966,9 +896,6 @@
                         showLoadingMessage("The server is warming up (first request may take 20-30 seconds). Please wait...");
                     }
                 }, 3000);
-                
-                // Fetch grades from Google Sheet
-                const grades = await fetchGradesFromGoogleSheet();
                 
                 const url = `${API_BASE_URL}/api/student/${rollNumber}`;
                 const response = await fetch(url);
@@ -1024,53 +951,6 @@
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
                             if (!subject.name) return;
-                            
-                            // Handle Cycle Test components
-                            if (subject.name.includes('Cycle_Test_') && subject.name.includes('_Obtained')) {
-                                const parts = subject.name.split('_Obtained')[0].split('_');
-                                const baseSubjectName = parts[0]; // The subject name
-                                
-                                // Create component name based on cycle test number
-                                let componentName = parts.slice(1).join('_'); // e.g., "Cycle_Test_1"
-                                
-                                // Create the subject group if it doesn't exist
-                                if (!groupedSubjects[baseSubjectName]) {
-                                    groupedSubjects[baseSubjectName] = {
-                                        name: baseSubjectName,
-                                        maxMarks: 100,
-                                        components: {},
-                                        obtained: 0,
-                                        grade: '-',
-                                        hasData: false
-                                    };
-                                }
-                                
-                                // Get the marks from the subject data
-                                const marks = subject.obtained || 0;
-                                
-                                // Display name for Cycle Tests
-                                const cycleNumber = componentName.split('_')[2]; // Extract number from Cycle_Test_N
-                                const displayName = `Cycle Test ${cycleNumber}`;
-                                
-                                // Add the component to the subject
-                                if (!groupedSubjects[baseSubjectName].components[componentName]) {
-                                    groupedSubjects[baseSubjectName].components[componentName] = {
-                                        marks: marks,
-                                        displayName: displayName
-                                    };
-                                } else {
-                                    // Update marks if this is being re-processed
-                                    groupedSubjects[baseSubjectName].components[componentName].marks = marks;
-                                }
-                                
-                                // If the component has marks > 0, add it to active components
-                                if (marks > 0) {
-                                    activeComponents.add(componentName);
-                                    groupedSubjects[baseSubjectName].hasData = true;
-                                }
-                                
-                                return; // Skip standard processing
-                            }
                             
                             // Handle special case for Periodic Test-I and Periodic Test-II
                             if (subject.name.includes('Periodic_Test-I') || subject.name.includes('Periodic_Test-II')) {
@@ -1209,11 +1089,20 @@
                             // Update the subject's total marks
                             subject.obtained = totalMarks;
                             
-                            // Look up grade from Google Sheets if available
-                            if (grades && grades[rollNumber] && grades[rollNumber][baseSubjectName]) {
-                                subject.grade = grades[rollNumber][baseSubjectName];
-                            } else {
-                                // Fallback to calculated grade if not found in Google Sheets
+                            // Look for Subject_Grade in the data instead of calculating it
+                            let subjectGradeFound = false;
+                            
+                            // Check if there is a Subject_Grade field for this subject
+                            data.subjects.forEach(subj => {
+                                if (subj.name === `${baseSubjectName}_Subject_Grade`) {
+                                    // Use the grade from the Google Sheet
+                                    subject.grade = subj.obtained || calculateGrade(totalMarks);
+                                    subjectGradeFound = true;
+                                }
+                            });
+                            
+                            // If no Subject_Grade was found, fall back to the calculated grade
+                            if (!subjectGradeFound) {
                                 subject.grade = calculateGrade(totalMarks);
                             }
                             
@@ -1425,7 +1314,7 @@
             
             // Components columns (colspan=activeComponents.length)
             const componentsHeader = document.createElement('th');
-            componentsHeader.textContent = 'Continuous Comprehensive Evaluation';
+            componentsHeader.textContent = 'Assessment Components';
             componentsHeader.setAttribute('colspan', activeComponents.length);
             headerRow1.appendChild(componentsHeader);
             
@@ -1474,16 +1363,7 @@
                     "Sanskrit_MDP": 10, // Special case for Sanskrit MDP
                     "Half_Yearly_Exam": 30,
                     "Annual_Exam": 50,
-                    "Oral": 20,
-                    // Cycle Test components
-                    "Cycle_Test_1": 20,
-                    "Cycle_Test_2": 20,
-                    "Cycle_Test_3": 20,
-                    "Cycle_Test_4": 20,
-                    "Cycle_Test_5": 20,
-                    "Cycle_Test_6": 20,
-                    "Cycle_Test_7": 20,
-                    "Cycle_Test_8": 20
+                    "Oral": 20
                 };
                 
                 // Get display name by replacing underscores with spaces
@@ -1571,15 +1451,7 @@
                     "learners diary": "Learners Diary",
                     "mdp": "MDP",
                     "half yearly exam": "Half Yearly Exam",
-                    "annual exam": "Annual Exam",
-                    "cycle test 1": "Cycle Test 1",
-                    "cycle test 2": "Cycle Test 2",
-                    "cycle test 3": "Cycle Test 3",
-                    "cycle test 4": "Cycle Test 4",
-                    "cycle test 5": "Cycle Test 5",
-                    "cycle test 6": "Cycle Test 6",
-                    "cycle test 7": "Cycle Test 7",
-                    "cycle test 8": "Cycle Test 8"
+                    "annual exam": "Annual Exam"
                 };
                 
                 // Check if we should use a specific display name
@@ -1644,6 +1516,8 @@
                 tableBody.appendChild(row);
             });
         }
+        
+        // Function to update component max marks when needed - Removed as no longer needed
 
         function populateSimpleTable(subjects) {
             const tableBody = document.getElementById('simpleTableBody');
