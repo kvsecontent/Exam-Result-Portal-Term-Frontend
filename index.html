@@ -861,7 +861,6 @@
             if (debugContent) {
                 debugContent.textContent += text + '\n';
             }
-            console.log(text); // Also log to console for better debugging
         };
         
         // Track API response time to determine if server is "cold"
@@ -917,36 +916,6 @@
                     
                     // Process the data
                     const data = result.data;
-
-                    // Clear the debug area before starting fresh
-                    window.addDebug("========== STARTING NEW FETCH ==========");
-                    
-                    // Log raw subjects data for debugging
-                    window.addDebug(`Total subject count: ${data.subjects?.length || 0}`);
-                    
-                    // Display each subject name and value for debugging
-                    window.addDebug("FULL SUBJECT LIST FROM API:");
-                    if (data.subjects && Array.isArray(data.subjects)) {
-                        data.subjects.forEach((subject, idx) => {
-                            if (subject && subject.name) {
-                                window.addDebug(`  ${idx}: ${subject.name} = ${subject.obtained}`);
-                            }
-                        });
-                    }
-                    
-                    // Explicitly look for Grade fields and log them
-                    window.addDebug("LOOKING FOR GRADE FIELDS:");
-                    const gradeFieldValues = {};
-                    if (data.subjects && Array.isArray(data.subjects)) {
-                        data.subjects.forEach(subject => {
-                            if (subject && subject.name && subject.name.endsWith('_Grade')) {
-                                const subjectName = subject.name.replace('_Grade', '');
-                                gradeFieldValues[subjectName] = subject.obtained;
-                                window.addDebug(`  Found: ${subject.name} = ${subject.obtained}`);
-                            }
-                        });
-                    }
-                    window.addDebug(`Total grade fields found: ${Object.keys(gradeFieldValues).length}`);
                     
                     // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
@@ -972,7 +941,7 @@
                                     // Store max marks for this component
                                     if (maxMarks > 0) {
                                         componentMaxMarks[componentName] = maxMarks;
-                                        window.addDebug(`Found max marks for ${componentName}: ${maxMarks}`);
+                                        console.log(`Found max marks for ${componentName}: ${maxMarks}`);
                                     }
                                 }
                             }
@@ -980,11 +949,8 @@
                         
                         // Now process all subjects to build the groupedSubjects object
                         data.subjects.forEach(subject => {
-                            // Skip if subject doesn't have a name 
+                            // Extract the base subject name and component
                             if (!subject.name) return;
-                            
-                            // Skip grade fields - we handle them separately
-                            if (subject.name.endsWith('_Grade')) return;
                             
                             // Handle special case for Periodic Test-I and Periodic Test-II
                             if (subject.name.includes('Periodic_Test-I') || subject.name.includes('Periodic_Test-II')) {
@@ -1069,7 +1035,7 @@
                                         window.allComponentMaxMarks[baseComponentName] = maxMarks;
                                         
                                         componentMaxMarks[baseComponentName] = maxMarks;
-                                        window.addDebug(`Found max marks for ${baseComponentName}: ${maxMarks}`);
+                                        console.log(`Found max marks for ${baseComponentName}: ${maxMarks}`);
                                     }
                                     
                                     // Skip further processing
@@ -1110,7 +1076,7 @@
                             }
                         });
                         
-                        // Calculate total marks for each subject
+                        // Calculate total marks and grades for each subject
                         for (const baseSubjectName in groupedSubjects) {
                             const subject = groupedSubjects[baseSubjectName];
                             let totalMarks = 0;
@@ -1120,33 +1086,15 @@
                                 totalMarks += subject.components[componentName].marks;
                             }
                             
-                            // Update the subject's total marks
+                            // Update the subject's total marks and grade
                             subject.obtained = totalMarks;
+                            subject.grade = calculateGrade(totalMarks);
                             
                             // Only add subjects with data
                             if (subject.hasData) {
                                 mainSubjects.push(subject);
                             }
                         }
-                        
-                        // Now apply grades from the Google Sheet to the subject objects
-                        window.addDebug("APPLYING GRADES FROM GOOGLE SHEET:");
-                        mainSubjects.forEach(subject => {
-                            // First check if we found a grade field for this subject
-                            if (gradeFieldValues[subject.name]) {
-                                subject.grade = gradeFieldValues[subject.name];
-                                window.addDebug(`  Set grade for ${subject.name} = ${subject.grade} (from Google Sheet)`);
-                            } else {
-                                // Fall back to calculated grade
-                                subject.grade = calculateGrade(subject.obtained);
-                                window.addDebug(`  No grade found for ${subject.name}, using calculated: ${subject.grade}`);
-                            }
-                        });
-                        
-                        window.addDebug("FINAL GRADES BEING DISPLAYED:");
-                        mainSubjects.forEach(subject => {
-                            window.addDebug(`  ${subject.name}: ${subject.grade}`);
-                        });
                         
                         // Check if any subjects have component data
                         if (mainSubjects.length > 0 && activeComponents.size > 0) {
@@ -1157,7 +1105,7 @@
                         window.hasSanskritSubject = mainSubjects.some(subject => 
                             subject.name && subject.name.toLowerCase().includes('sanskrit')
                         );
-                        window.addDebug("Sanskrit subject exists: " + window.hasSanskritSubject);
+                        console.log("Sanskrit subject exists:", window.hasSanskritSubject);
                     }
                     
                     // Add processed data to the result
@@ -1552,6 +1500,8 @@
                 tableBody.appendChild(row);
             });
         }
+        
+        // Function to update component max marks when needed - Removed as no longer needed
 
         function populateSimpleTable(subjects) {
             const tableBody = document.getElementById('simpleTableBody');
