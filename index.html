@@ -925,6 +925,22 @@
                     const groupedSubjects = {};
                     const mainSubjects = [];
                     
+                    // Store subject grades directly from API
+                    const subjectGrades = {};
+                    
+                    // Extract all grades first from data
+                    if (data.subjects && Array.isArray(data.subjects)) {
+                        data.subjects.forEach(subject => {
+                            if (subject.name && subject.name.includes('_Grade')) {
+                                const baseSubjectName = subject.name.split('_Grade')[0];
+                                if (baseSubjectName) {
+                                    subjectGrades[baseSubjectName] = subject.obtained || '';
+                                    console.log(`Found grade for ${baseSubjectName}: ${subject.obtained}`);
+                                }
+                            }
+                        });
+                    }
+                    
                     // Extract Max_Marks values first (before processing subjects)
                     if (data.subjects && Array.isArray(data.subjects)) {
                         // First scan specifically for Max_Marks fields
@@ -951,6 +967,11 @@
                         data.subjects.forEach(subject => {
                             // Extract the base subject name and component
                             if (!subject.name) return;
+                            
+                            // Skip Grade fields - we already processed them
+                            if (subject.name.includes('_Grade')) {
+                                return;
+                            }
                             
                             // Handle special case for Periodic Test-I and Periodic Test-II
                             if (subject.name.includes('Periodic_Test-I') || subject.name.includes('Periodic_Test-II')) {
@@ -1076,7 +1097,7 @@
                             }
                         });
                         
-                        // Calculate total marks and grades for each subject
+                        // Calculate total marks and assign grades for each subject
                         for (const baseSubjectName in groupedSubjects) {
                             const subject = groupedSubjects[baseSubjectName];
                             let totalMarks = 0;
@@ -1089,21 +1110,13 @@
                             // Update the subject's total marks
                             subject.obtained = totalMarks;
                             
-                            // Look for Grade in the data instead of calculating it
-                            let gradeFound = false;
-                            
-                            // Check if there is a Grade field for this subject
-                            data.subjects.forEach(subj => {
-                                if (subj.name === `${baseSubjectName}_Grade`) {
-                                    // Use the grade from the Google Sheet
-                                    subject.grade = subj.obtained || calculateGrade(totalMarks);
-                                    gradeFound = true;
-                                }
-                            });
-                            
-                            // If no Grade was found, fall back to the calculated grade
-                            if (!gradeFound) {
+                            // Assign grade from our collected grades or calculate it
+                            if (subjectGrades[baseSubjectName]) {
+                                subject.grade = subjectGrades[baseSubjectName];
+                                console.log(`Using fetched grade for ${baseSubjectName}: ${subject.grade}`);
+                            } else {
                                 subject.grade = calculateGrade(totalMarks);
+                                console.log(`Calculated grade for ${baseSubjectName}: ${subject.grade}`);
                             }
                             
                             // Only add subjects with data
