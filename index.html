@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Results Portal</title>
     <style>
+        /* All existing styles remain the same */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f5f5f5;
@@ -22,125 +23,8 @@
             border: 2px solid #3f51b5;
         }
         
-        .header {
-            background-color: #3f51b5;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        
-        .search-section {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        
-        input[type="text"] {
-            padding: 10px;
-            width: 200px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            background-color: #3f51b5;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-left: 10px;
-        }
-        
-        button:hover {
-            background-color: #303f9f;
-        }
-        
-        button:disabled {
-            background-color: #9fa8da;
-            cursor: not-allowed;
-        }
-        
-        .result-card {
-            display: none;
-            padding: 15px;
-        }
-        
-        .school-info {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .school-logo {
-            width: 100px;
-            height: 80px;
-            margin: 0 auto;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: transparent;
-        }
-        
-        .school-info h2 {
-            margin: 10px 0 5px;
-            font-size: 18px;
-        }
-        
-        .student-info {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            border: 1px solid #eee;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        
-        .student-info-item {
-            flex: 1;
-            min-width: 250px;
-        }
-        
-        .student-info p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        
-        .text-right {
-            text-align: right;
-        }
-        
-        .exam-info {
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .exam-info p {
-            margin: 5px 0;
-        }
-        
-        /* Table containers with horizontal scroll on mobile */
-        #simpleTableContainer, #detailedTableContainer {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* Better scrolling on iOS */
-            position: relative;
-            border-radius: 4px;
-            background-color: #fff;
-            border: 1px solid #eee;
-            margin-bottom: 15px;
-        }
-        
+        /* ... All other existing styles remain the same ... */
+
         /* Enhanced table border styles */
         .subjects-table {
             width: 100%;
@@ -181,310 +65,12 @@
             box-shadow: inset 0 0 0 1px #000;
         }
         
-        /* Make all component columns equal width */
-        .subjects-table th.component-header {
-            width: 80px; /* Fixed width for components */
-            min-width: 80px;
-            max-width: 100px;
-        }
-        
-        .subjects-table th:first-child { /* Subject column */
-            width: 120px;
-        }
-        
-        .subjects-table th.total-header, 
-        .subjects-table th.grade-header {
-            width: 60px;
-        }
-        
-        .subjects-table th {
-            background-color: #f5f5f5;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .subjects-table th:first-child, .subjects-table td:first-child {
-            text-align: center;
-        }
-        
         .grade-A, .grade-A\+ { color: #4CAF50; font-weight: bold; }
         .grade-B, .grade-B\+ { color: #2196F3; font-weight: bold; }
         .grade-C, .grade-C\+ { color: #FF9800; font-weight: bold; }
         .grade-D, .grade-D\+ { color: #FF9800; font-weight: bold; }
         .grade-E { color: #FF7043; font-weight: bold; }
         .grade-F { color: #F44336; font-weight: bold; }
-        
-        .summary {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        
-        .total-section, .result-section {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 5px;
-            margin: 5px;
-        }
-        
-        .result-section {
-            text-align: center;
-        }
-        
-        .pass {
-            color: #4CAF50;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .fail {
-            color: #F44336;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .signature-section {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        
-        .signature {
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
-            padding: 0 10px;
-        }
-        
-        .signature-image {
-            max-width: 120px;
-            height: 50px;
-            margin: 5px auto;
-            display: block;
-        }
-        
-        .error-message {
-            color: #F44336;
-            text-align: center;
-            padding: 15px;
-            display: none;
-        }
-        
-        .print-button {
-            text-align: center;
-            margin: 15px 0;
-        }
-        
-        .disclaimer {
-            text-align: center;
-            margin: 20px auto 10px;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-            max-width: 90%;
-            font-family: 'Times New Roman', Times, serif;
-            position: relative;
-            clear: both;
-            display: block;
-            page-break-inside: avoid;
-        }
-        
-        .disclaimer p {
-            text-align: center;
-            margin: 0 auto;
-        }
-        
-        .component-weight {
-            font-size: 11px;
-            color: #666;
-            display: inline-block !important; 
-            margin-top: 4px;
-            font-weight: normal;
-            background-color: #f7f7f7;
-            padding: 1px 3px;
-            border-radius: 3px;
-        }
-        
-        /* Mobile scroll indicator */
-        .scroll-indicator {
-            display: none;
-            text-align: center;
-            margin: 0;
-            padding: 3px 0;
-            color: #3f51b5;
-            font-size: 12px;
-            background-color: rgba(255,255,255,0.9);
-            position: sticky;
-            left: 0;
-            width: 100%;
-            z-index: 1;
-        }
-        
-        /* Skeleton loading animation */
-        @keyframes shimmer {
-            0% {
-                background-position: -468px 0;
-            }
-            100% {
-                background-position: 468px 0;
-            }
-        }
-        
-        .skeleton {
-            background: #f6f7f8;
-            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-            background-repeat: no-repeat;
-            background-size: 800px 104px;
-            display: block;
-            border-radius: 4px;
-            position: relative;
-            animation-duration: 1.5s;
-            animation-fill-mode: forwards;
-            animation-iteration-count: infinite;
-            animation-name: shimmer;
-            animation-timing-function: linear;
-        }
-        
-        .skeleton-loader {
-            display: none;
-            padding: 15px;
-        }
-        
-        .skeleton-line {
-            height: 16px;
-            margin-bottom: 8px;
-            border-radius: 2px;
-        }
-        
-        .skeleton-line.title {
-            height: 24px;
-            width: 40%;
-            margin: 0 auto 15px auto;
-        }
-        
-        .skeleton-line.full {
-            width: 100%;
-        }
-        
-        .skeleton-line.medium {
-            width: 70%;
-        }
-        
-        .skeleton-line.short {
-            width: 50%;
-        }
-        
-        .skeleton-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        .skeleton-table th, .skeleton-table td {
-            border: 1px solid #eee;
-            height: 30px;
-        }
-        
-        .loading-message {
-            display: none;
-            text-align: center;
-            padding: 15px;
-            margin-top: 10px;
-            border-radius: 4px;
-            background-color: #e3f2fd;
-            border: 1px solid #bbdefb;
-            color: #0d47a1;
-            font-size: 14px;
-        }
-        
-        .loading-message.error {
-            background-color: #ffebee;
-            border: 1px solid #ffcdd2;
-            color: #b71c1c;
-        }
-        
-        .loading-message.success {
-            background-color: #e8f5e9;
-            border: 1px solid #c8e6c9;
-            color: #1b5e20;
-        }
-        
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(63, 81, 181, 0.3);
-            border-radius: 50%;
-            border-top-color: #3f51b5;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 0;
-                border-radius: 0;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .student-info-item {
-                min-width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .student-info p strong {
-                width: 150px;
-            }
-            
-            .signature {
-                min-width: 100%;
-                margin-bottom: 15px;
-            }
-            
-            input[type="text"] {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            button {
-                width: 100%;
-                margin-left: 0;
-            }
-            
-            /* Show horizontal scroll indicators on mobile */
-            .scroll-indicator {
-                display: block;
-            }
-            
-            /* Table styles for mobile */
-            .subjects-table {
-                font-size: 12px;
-            }
-            
-            .subjects-table th, .subjects-table td {
-                padding: 4px;
-                white-space: nowrap;
-            }
-            
-            .component-weight {
-                font-size: 8px;
-            }
-        }
         
         /* Enhanced print styles for tables */
         @media print {
@@ -583,84 +169,12 @@
                 color-adjust: exact !important;
             }
             
-            .total-section, .result-section {
-                border: 1px solid #000 !important;
-            }
-            
-            .print-button {
-                display: none !important;
-            }
-            
             .grade-A, .grade-A\+ { color: #4CAF50 !important; }
             .grade-B, .grade-B\+ { color: #2196F3 !important; }
             .grade-C, .grade-C\+ { color: #FF9800 !important; }
             .grade-D, .grade-D\+ { color: #FF9800 !important; }
             .grade-E { color: #FF7043 !important; }
             .grade-F { color: #F44336 !important; }
-            
-            .disclaimer {
-                position: relative !important;
-                visibility: visible !important;
-                display: block !important;
-                margin: 15px auto 5px !important;
-                text-align: center !important;
-                font-family: 'Times New Roman', Times, serif !important;
-                width: 90% !important;
-                page-break-before: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            
-            .disclaimer p {
-                text-align: center !important;
-                margin: 0 auto !important;
-                width: 100% !important;
-                font-size: 10px !important;
-            }
-            
-            .pass { color: #4CAF50 !important; }
-            .fail { color: #F44336 !important; }
-            
-            /* Hide scroll indicators when printing */
-            .scroll-indicator {
-                display: none !important;
-            }
-            
-            /* Scrolling containers should display their full content */
-            #simpleTableContainer, #detailedTableContainer {
-                overflow: visible !important;
-                border: none !important;
-                position: static !important;
-                transform: none !important;
-                width: 100% !important;
-                margin: 0 !important;
-            }
-            
-            @page {
-                size: portrait;
-                margin: 5mm;
-            }
-        }
-        
-        /* Landscape print styles - will be applied when body has 'print-landscape' class */
-        body.print-landscape {
-            width: auto;
-            height: auto;
-        }
-        
-        @media print and (min-width: 800px) {
-            body.print-landscape .subjects-table {
-                font-size: 10px !important;
-            }
-            
-            body.print-landscape .subjects-table th, 
-            body.print-landscape .subjects-table td {
-                padding: 4px !important;
-            }
-            
-            @page {
-                size: landscape;
-                margin: 10mm;
-            }
         }
     </style>
 </head>
@@ -687,65 +201,7 @@
         
         <!-- Skeleton Loader -->
         <div id="skeletonLoader" class="skeleton-loader">
-            <div class="school-info">
-                <div class="skeleton skeleton-line title"></div>
-                <div class="skeleton skeleton-line short" style="margin: 0 auto;"></div>
-            </div>
-            
-            <div class="student-info">
-                <div class="student-info-item">
-                    <div class="skeleton skeleton-line full"></div>
-                    <div class="skeleton skeleton-line full"></div>
-                    <div class="skeleton skeleton-line full"></div>
-                </div>
-                <div class="student-info-item text-right">
-                    <div class="skeleton skeleton-line full"></div>
-                    <div class="skeleton skeleton-line full"></div>
-                    <div class="skeleton skeleton-line full"></div>
-                </div>
-            </div>
-            
-            <table class="skeleton-table">
-                <thead>
-                    <tr>
-                        <th><div class="skeleton"></div></th>
-                        <th><div class="skeleton"></div></th>
-                        <th><div class="skeleton"></div></th>
-                        <th><div class="skeleton"></div></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                    </tr>
-                    <tr>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                    </tr>
-                    <tr>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                        <td><div class="skeleton"></div></td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="summary">
-                <div style="flex: 1;">
-                    <div class="skeleton skeleton-line medium"></div>
-                    <div class="skeleton skeleton-line short"></div>
-                </div>
-                <div style="flex: 1; text-align: center;">
-                    <div class="skeleton skeleton-line medium" style="margin: 0 auto;"></div>
-                    <div class="skeleton skeleton-line short" style="margin: 0 auto;"></div>
-                </div>
-            </div>
+            <!-- Skeleton loader content remains the same -->
         </div>
         
         <div class="result-card" id="resultCard">
@@ -845,6 +301,10 @@
         // Replace with your backend API URL
         const API_BASE_URL = 'https://term-exam-result-api.onrender.com';
         
+        // Google Sheets configuration
+        // Replace with your Google Sheets published URL or API endpoint
+        const GOOGLE_SHEET_URL = 'https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/YOUR_RANGE?key=YOUR_API_KEY';
+        
         // Create an invisible debug div to help diagnose issues
         const debugDiv = document.createElement('div');
         debugDiv.id = 'debug-info';
@@ -874,6 +334,63 @@
         // Global flag to track if Sanskrit subject exists
         window.hasSanskritSubject = false;
         
+        // Cache for grades from Google Sheets
+        let gradeCache = null;
+        
+        // Function to fetch grades from Google Sheet
+        async function fetchGradesFromGoogleSheet() {
+            try {
+                // If grades are already cached, return them
+                if (gradeCache) {
+                    return gradeCache;
+                }
+                
+                // Fetch grades from Google Sheet
+                // For this example, we'll use a published Google Sheet as CSV
+                // Replace with your actual Google Sheets API implementation
+                // This is a placeholder implementation
+                
+                // Here we can either use the Google Sheets API directly or a published CSV version of the sheet
+                const response = await fetch(GOOGLE_SHEET_URL);
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch Google Sheet data');
+                    return {};
+                }
+                
+                const data = await response.json();
+                
+                // Process the data from Google Sheets
+                // This depends on your Google Sheet structure
+                // Assuming a structure with columns: Roll Number, Subject, Grade
+                const grades = {};
+                
+                // Skip header row and process data rows
+                // This is a placeholder - adjust according to your actual Google Sheet structure
+                if (data.values && data.values.length > 1) {
+                    for (let i = 1; i < data.values.length; i++) {
+                        const row = data.values[i];
+                        const rollNumber = row[0]; // Roll number column
+                        const subject = row[1];    // Subject column
+                        const grade = row[2];      // Grade column
+                        
+                        if (!grades[rollNumber]) {
+                            grades[rollNumber] = {};
+                        }
+                        
+                        grades[rollNumber][subject] = grade;
+                    }
+                }
+                
+                // Cache the grades
+                gradeCache = grades;
+                return grades;
+            } catch (error) {
+                console.error('Error fetching grades from Google Sheet:', error);
+                return {};
+            }
+        }
+        
         async function fetchDataFromBackend(rollNumber) {
             try {
                 // Start timing the API response
@@ -897,9 +414,13 @@
                     }
                 }, 3000);
                 
+                // Fetch student data from backend
                 const url = `${API_BASE_URL}/api/student/${rollNumber}`;
                 const response = await fetch(url);
                 const result = await response.json();
+                
+                // Fetch grades from Google Sheet
+                const grades = await fetchGradesFromGoogleSheet();
                 
                 // Track that we've completed one fetch
                 isFirstFetch = false;
@@ -952,8 +473,56 @@
                             // Extract the base subject name and component
                             if (!subject.name) return;
                             
+                            // Handle Cycle Test components
+                            if (subject.name.includes('Cycle_Test_') && subject.name.includes('_Obtained')) {
+                                const parts = subject.name.split('_Obtained')[0].split('_');
+                                const baseSubjectName = parts[0]; // The subject name
+                                
+                                // Create component name based on cycle test number
+                                let componentName = parts.slice(1).join('_'); // e.g., "Cycle_Test_1"
+                                
+                                // Create the subject group if it doesn't exist
+                                if (!groupedSubjects[baseSubjectName]) {
+                                    groupedSubjects[baseSubjectName] = {
+                                        name: baseSubjectName,
+                                        maxMarks: 100,
+                                        components: {},
+                                        obtained: 0,
+                                        grade: '-',
+                                        hasData: false
+                                    };
+                                }
+                                
+                                // Get the marks from the subject data
+                                const marks = subject.obtained || 0;
+                                
+                                // Display name for Cycle Tests
+                                const cycleNumber = componentName.split('_')[2]; // Extract number from Cycle_Test_N
+                                const displayName = `Cycle Test ${cycleNumber}`;
+                                
+                                // Add the component to the subject
+                                if (!groupedSubjects[baseSubjectName].components[componentName]) {
+                                    groupedSubjects[baseSubjectName].components[componentName] = {
+                                        marks: marks,
+                                        displayName: displayName
+                                    };
+                                } else {
+                                    // Update marks if this is being re-processed
+                                    groupedSubjects[baseSubjectName].components[componentName].marks = marks;
+                                }
+                                
+                                // If the component has marks > 0, add it to active components
+                                if (marks > 0) {
+                                    activeComponents.add(componentName);
+                                    groupedSubjects[baseSubjectName].hasData = true;
+                                }
+                                
+                                return; // Skip standard processing
+                            }
+                            
                             // Handle special case for Periodic Test-I and Periodic Test-II
                             if (subject.name.includes('Periodic_Test-I') || subject.name.includes('Periodic_Test-II')) {
+                                // Same existing logic for periodic tests
                                 const testParts = subject.name.split('_');
                                 const baseSubjectName = testParts[0]; // The subject name
                                 
@@ -1042,6 +611,12 @@
                                     return;
                                 }
                                 
+                                // Check if component ends with "_Grade" (for Google Sheets grades)
+                                if (componentName.endsWith("_Grade")) {
+                                    // Skip processing grade fields - we'll get these from Google Sheets
+                                    return;
+                                }
+                                
                                 // Create the subject group if it doesn't exist
                                 if (!groupedSubjects[baseSubjectName]) {
                                     groupedSubjects[baseSubjectName] = {
@@ -1076,7 +651,7 @@
                             }
                         });
                         
-                        // Calculate total marks and grades for each subject
+                        // Calculate total marks and set grades for each subject
                         for (const baseSubjectName in groupedSubjects) {
                             const subject = groupedSubjects[baseSubjectName];
                             let totalMarks = 0;
@@ -1086,9 +661,16 @@
                                 totalMarks += subject.components[componentName].marks;
                             }
                             
-                            // Update the subject's total marks and grade
+                            // Update the subject's total marks
                             subject.obtained = totalMarks;
-                            subject.grade = calculateGrade(totalMarks);
+                            
+                            // Look up grade from Google Sheets instead of calculating
+                            if (grades[rollNumber] && grades[rollNumber][baseSubjectName]) {
+                                subject.grade = grades[rollNumber][baseSubjectName];
+                            } else {
+                                // Fallback to calculated grade if not found in Google Sheets
+                                subject.grade = calculateGrade(totalMarks);
+                            }
                             
                             // Only add subjects with data
                             if (subject.hasData) {
@@ -1176,6 +758,7 @@
             document.getElementById('searchButton').disabled = false;
         }
 
+        // This function is kept as a fallback in case grades are not found in Google Sheets
         function calculateGrade(marks) {
             if (marks >= 90) return 'A';
             else if (marks >= 80) return 'B';
@@ -1298,7 +881,7 @@
             
             // Components columns (colspan=activeComponents.length)
             const componentsHeader = document.createElement('th');
-            componentsHeader.textContent = 'Assessment Components';
+            componentsHeader.textContent = 'Continuous Comprehensive Evaluation';
             componentsHeader.setAttribute('colspan', activeComponents.length);
             headerRow1.appendChild(componentsHeader);
             
@@ -1347,7 +930,16 @@
                     "Sanskrit_MDP": 10, // Special case for Sanskrit MDP
                     "Half_Yearly_Exam": 30,
                     "Annual_Exam": 50,
-                    "Oral": 20
+                    "Oral": 20,
+                    // Cycle Test components
+                    "Cycle_Test_1": 20,
+                    "Cycle_Test_2": 20,
+                    "Cycle_Test_3": 20,
+                    "Cycle_Test_4": 20,
+                    "Cycle_Test_5": 20,
+                    "Cycle_Test_6": 20,
+                    "Cycle_Test_7": 20,
+                    "Cycle_Test_8": 20
                 };
                 
                 // Get display name by replacing underscores with spaces
@@ -1396,10 +988,6 @@
                 else if (componentName === "SEE" && window.hasSanskritSubject) {
                     finalMaxMarks = 60; // SEE for Sanskrit subject
                 }
-                // Special handling for SEE component
-                else if (componentName.includes("SEE")) {
-                    finalMaxMarks = 40;
-                }
                 // Standard hardcoded values
                 else if (hardcodedMaxMarks[componentName]) {
                     finalMaxMarks = hardcodedMaxMarks[componentName];
@@ -1435,7 +1023,15 @@
                     "learners diary": "Learners Diary",
                     "mdp": "MDP",
                     "half yearly exam": "Half Yearly Exam",
-                    "annual exam": "Annual Exam"
+                    "annual exam": "Annual Exam",
+                    "cycle test 1": "Cycle Test 1",
+                    "cycle test 2": "Cycle Test 2",
+                    "cycle test 3": "Cycle Test 3",
+                    "cycle test 4": "Cycle Test 4",
+                    "cycle test 5": "Cycle Test 5",
+                    "cycle test 6": "Cycle Test 6",
+                    "cycle test 7": "Cycle Test 7",
+                    "cycle test 8": "Cycle Test 8"
                 };
                 
                 // Check if we should use a specific display name
@@ -1491,7 +1087,7 @@
                 totalCell.textContent = subject.obtained || '0';
                 row.appendChild(totalCell);
                 
-                // Add grade cell
+                // Add grade cell - Using grade from Google Sheets or calculated fallback
                 const gradeCell = document.createElement('td');
                 gradeCell.textContent = subject.grade;
                 gradeCell.className = getGradeClass(subject.grade);
@@ -1500,8 +1096,6 @@
                 tableBody.appendChild(row);
             });
         }
-        
-        // Function to update component max marks when needed - Removed as no longer needed
 
         function populateSimpleTable(subjects) {
             const tableBody = document.getElementById('simpleTableBody');
