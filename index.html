@@ -1089,20 +1089,20 @@
                             // Update the subject's total marks
                             subject.obtained = totalMarks;
                             
-                            // Look for Subject_Grade in the data instead of calculating it
-                            let subjectGradeFound = false;
+                            // Look for Grade in the data instead of calculating it
+                            let gradeFound = false;
                             
-                            // Check if there is a Subject_Grade field for this subject
+                            // Check if there is a Grade field for this subject
                             data.subjects.forEach(subj => {
-                                if (subj.name === `${baseSubjectName}_Subject_Grade`) {
+                                if (subj.name === `${baseSubjectName}_Grade`) {
                                     // Use the grade from the Google Sheet
                                     subject.grade = subj.obtained || calculateGrade(totalMarks);
-                                    subjectGradeFound = true;
+                                    gradeFound = true;
                                 }
                             });
                             
-                            // If no Subject_Grade was found, fall back to the calculated grade
-                            if (!subjectGradeFound) {
+                            // If no Grade was found, fall back to the calculated grade
+                            if (!gradeFound) {
                                 subject.grade = calculateGrade(totalMarks);
                             }
                             
