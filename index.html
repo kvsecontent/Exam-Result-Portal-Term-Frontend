@@ -1329,6 +1329,7 @@
                     "Mid_Term": 40,
                     "Sanskrit_Mid_Term": 60, // Special case for Sanskrit
                     "SEE": 40,
+                    "Sanskrit_SEE": 60, // Special case for Sanskrit SEE
                     "Subject_Enrichment_Activity": 5, // Alternative name
                     "Oral_Skill": 20,
                     "Learner_Diary": 10,
@@ -1385,6 +1386,12 @@
                          document.getElementById('simpleTableBody').textContent.includes("Sanskrit")) && 
                         formattedName.toLowerCase().includes("mdp")) {
                     finalMaxMarks = 10; // MDP for Sanskrit subject
+                }
+                // Special case for SEE in Sanskrit subjects
+                else if (componentName === "SEE" && 
+                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
+                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
+                    finalMaxMarks = 60; // SEE for Sanskrit subject
                 }
                 // Special handling for SEE component
                 else if (componentName.includes("SEE")) {
