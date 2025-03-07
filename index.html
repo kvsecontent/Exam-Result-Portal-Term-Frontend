@@ -874,6 +874,9 @@
         
         // Global flag to track if Sanskrit subject exists
         window.hasSanskritSubject = false;
+
+        // Global object to store all direct grade values
+        window.subjectGrades = {};
         
         async function fetchDataFromBackend(rollNumber) {
             try {
@@ -917,9 +920,27 @@
                     
                     // Process the data
                     const data = result.data;
+
+                    // Log the raw data for debugging
+                    console.log("RECEIVED DATA:", JSON.stringify(data));
                     
-                    // Debug: output all raw data for subjects
-                    console.log("ALL SUBJECTS DATA:", data.subjects);
+                    // First pass: extract all grades from the data
+                    if (data.subjects && Array.isArray(data.subjects)) {
+                        console.log("LOOKING FOR GRADES IN SUBJECTS:");
+                        
+                        // Clear previous grades
+                        window.subjectGrades = {};
+                        
+                        data.subjects.forEach(subject => {
+                            if (subject && subject.name && subject.name.endsWith("_Grade")) {
+                                const subjectName = subject.name.replace("_Grade", "");
+                                window.subjectGrades[subjectName] = subject.obtained;
+                                console.log(`FOUND GRADE: ${subject.name} = "${subject.obtained}"`);
+                            }
+                        });
+                        
+                        console.log("ALL FOUND GRADES:", window.subjectGrades);
+                    }
                     
                     // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
@@ -928,43 +949,6 @@
                     // Group subjects by their base name (before the underscore)
                     const groupedSubjects = {};
                     const mainSubjects = [];
-                    
-                    // Special grades map to track them directly
-                    const subjectGrades = {};
-                    
-                    // First, log all subject names that include "Grade" to debug
-                    if (data.subjects && Array.isArray(data.subjects)) {
-                        console.log("Listing all subjects with 'Grade' in name:");
-                        data.subjects.forEach(subject => {
-                            if (subject.name && subject.name.includes('Grade')) {
-                                console.log(`Found: ${subject.name} = ${subject.obtained}`);
-                            }
-                        });
-                    }
-                    
-                    // Map exact grade columns to their subject names
-                    const gradeColumns = {
-                        'Hindi_Grade': 'Hindi',
-                        'English_Grade': 'English',
-                        'Mathematics_Grade': 'Mathematics',
-                        'EvS_Grade': 'EvS',
-                        'Science_Grade': 'Science',
-                        'Social_Science_Grade': 'Social_Science',
-                        'Sanskrit_Grade': 'Sanskrit',
-                        'Artificial_Intelligence_Grade': 'Artificial_Intelligence'
-                    };
-                    
-                    // Extract direct grade values from the data using the known column names
-                    if (data.subjects && Array.isArray(data.subjects)) {
-                        data.subjects.forEach(subject => {
-                            // Check if this is a grade column we know about
-                            if (subject.name && Object.keys(gradeColumns).includes(subject.name)) {
-                                const subjectName = gradeColumns[subject.name];
-                                subjectGrades[subjectName] = subject.obtained || '';
-                                console.log(`✓ Found grade for ${subjectName}: "${subject.obtained}"`);
-                            }
-                        });
-                    }
                     
                     // Extract Max_Marks values first (before processing subjects)
                     if (data.subjects && Array.isArray(data.subjects)) {
@@ -990,11 +974,8 @@
                         
                         // Now process all subjects to build the groupedSubjects object
                         data.subjects.forEach(subject => {
-                            // Extract the base subject name and component
-                            if (!subject.name) return;
-                            
-                            // Skip Grade fields - we already processed them
-                            if (subject.name.includes('_Grade')) {
+                            // Skip if subject doesn't have a name or if it's a grade field
+                            if (!subject.name || subject.name.endsWith("_Grade")) {
                                 return;
                             }
                             
@@ -1122,7 +1103,7 @@
                             }
                         });
                         
-                        // Calculate total marks and assign grades for each subject
+                        // Calculate total marks for each subject
                         for (const baseSubjectName in groupedSubjects) {
                             const subject = groupedSubjects[baseSubjectName];
                             let totalMarks = 0;
@@ -1135,20 +1116,25 @@
                             // Update the subject's total marks
                             subject.obtained = totalMarks;
                             
-                            // Assign grade from our collected grades or calculate it
-                            if (subjectGrades[baseSubjectName]) {
-                                subject.grade = subjectGrades[baseSubjectName];
-                                console.log(`✓ Using grade from Google Sheet for ${baseSubjectName}: "${subject.grade}"`);
-                            } else {
-                                subject.grade = calculateGrade(totalMarks);
-                                console.log(`Using calculated grade for ${baseSubjectName}: ${subject.grade}`);
-                            }
-                            
                             // Only add subjects with data
                             if (subject.hasData) {
                                 mainSubjects.push(subject);
                             }
                         }
+                        
+                        // Now apply the previously extracted grades
+                        console.log("APPLYING GRADES TO SUBJECTS:");
+                        mainSubjects.forEach(subject => {
+                            if (window.subjectGrades[subject.name]) {
+                                // Use grade from the global grades object if available
+                                subject.grade = window.subjectGrades[subject.name];
+                                console.log(`Applied grade for ${subject.name}: "${subject.grade}"`);
+                            } else {
+                                // Fallback to calculated grade
+                                subject.grade = calculateGrade(subject.obtained);
+                                console.log(`No grade found for ${subject.name}, calculated: "${subject.grade}"`);
+                            }
+                        });
                         
                         // Check if any subjects have component data
                         if (mainSubjects.length > 0 && activeComponents.size > 0) {
@@ -1167,12 +1153,6 @@
                     data.groupedSubjects = mainSubjects;
                     data.activeComponents = Array.from(activeComponents);
                     data.componentMaxMarks = componentMaxMarks;
-                    
-                    // Print out what grades we're actually using
-                    console.log("FINAL GRADES BEING DISPLAYED:");
-                    mainSubjects.forEach(subject => {
-                        console.log(`${subject.name}: ${subject.grade}`);
-                    });
                     
                     // Hide loading message
                     hideLoadingMessage();
