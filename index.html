@@ -861,6 +861,7 @@
             if (debugContent) {
                 debugContent.textContent += text + '\n';
             }
+            console.log(text); // Also log to console for better debugging
         };
         
         // Track API response time to determine if server is "cold"
@@ -917,6 +918,9 @@
                     // Process the data
                     const data = result.data;
                     
+                    // Debug: output all raw data for subjects
+                    console.log("ALL SUBJECTS DATA:", data.subjects);
+                    
                     // Extract all active components for this student with their max marks
                     const activeComponents = new Set();
                     const componentMaxMarks = {};
@@ -925,18 +929,39 @@
                     const groupedSubjects = {};
                     const mainSubjects = [];
                     
-                    // Store subject grades directly from API
+                    // Special grades map to track them directly
                     const subjectGrades = {};
                     
-                    // Extract all grades first from data
+                    // First, log all subject names that include "Grade" to debug
+                    if (data.subjects && Array.isArray(data.subjects)) {
+                        console.log("Listing all subjects with 'Grade' in name:");
+                        data.subjects.forEach(subject => {
+                            if (subject.name && subject.name.includes('Grade')) {
+                                console.log(`Found: ${subject.name} = ${subject.obtained}`);
+                            }
+                        });
+                    }
+                    
+                    // Map exact grade columns to their subject names
+                    const gradeColumns = {
+                        'Hindi_Grade': 'Hindi',
+                        'English_Grade': 'English',
+                        'Mathematics_Grade': 'Mathematics',
+                        'EvS_Grade': 'EvS',
+                        'Science_Grade': 'Science',
+                        'Social_Science_Grade': 'Social_Science',
+                        'Sanskrit_Grade': 'Sanskrit',
+                        'Artificial_Intelligence_Grade': 'Artificial_Intelligence'
+                    };
+                    
+                    // Extract direct grade values from the data using the known column names
                     if (data.subjects && Array.isArray(data.subjects)) {
                         data.subjects.forEach(subject => {
-                            if (subject.name && subject.name.includes('_Grade')) {
-                                const baseSubjectName = subject.name.split('_Grade')[0];
-                                if (baseSubjectName) {
-                                    subjectGrades[baseSubjectName] = subject.obtained || '';
-                                    console.log(`Found grade for ${baseSubjectName}: ${subject.obtained}`);
-                                }
+                            // Check if this is a grade column we know about
+                            if (subject.name && Object.keys(gradeColumns).includes(subject.name)) {
+                                const subjectName = gradeColumns[subject.name];
+                                subjectGrades[subjectName] = subject.obtained || '';
+                                console.log(`✓ Found grade for ${subjectName}: "${subject.obtained}"`);
                             }
                         });
                     }
@@ -1113,10 +1138,10 @@
                             // Assign grade from our collected grades or calculate it
                             if (subjectGrades[baseSubjectName]) {
                                 subject.grade = subjectGrades[baseSubjectName];
-                                console.log(`Using fetched grade for ${baseSubjectName}: ${subject.grade}`);
+                                console.log(`✓ Using grade from Google Sheet for ${baseSubjectName}: "${subject.grade}"`);
                             } else {
                                 subject.grade = calculateGrade(totalMarks);
-                                console.log(`Calculated grade for ${baseSubjectName}: ${subject.grade}`);
+                                console.log(`Using calculated grade for ${baseSubjectName}: ${subject.grade}`);
                             }
                             
                             // Only add subjects with data
@@ -1142,6 +1167,12 @@
                     data.groupedSubjects = mainSubjects;
                     data.activeComponents = Array.from(activeComponents);
                     data.componentMaxMarks = componentMaxMarks;
+                    
+                    // Print out what grades we're actually using
+                    console.log("FINAL GRADES BEING DISPLAYED:");
+                    mainSubjects.forEach(subject => {
+                        console.log(`${subject.name}: ${subject.grade}`);
+                    });
                     
                     // Hide loading message
                     hideLoadingMessage();
