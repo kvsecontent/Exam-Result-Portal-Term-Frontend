@@ -1334,6 +1334,7 @@
                     "Learner_Diary": 10,
                     "Learners_Diary": 10, // Alternative spelling
                     "MDP": 20,
+                    "Sanskrit_MDP": 10, // Special case for Sanskrit MDP
                     "Half_Yearly_Exam": 30,
                     "Annual_Exam": 50,
                     "Oral": 20
@@ -1377,6 +1378,13 @@
                         (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
                          document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
                     finalMaxMarks = 60; // Mid_Term for Sanskrit subject
+                }
+                // Special case for MDP in Sanskrit subjects
+                else if (componentName === "MDP" && 
+                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
+                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit")) && 
+                        formattedName.toLowerCase().includes("mdp")) {
+                    finalMaxMarks = 10; // MDP for Sanskrit subject
                 }
                 // Special handling for SEE component
                 else if (componentName.includes("SEE")) {
