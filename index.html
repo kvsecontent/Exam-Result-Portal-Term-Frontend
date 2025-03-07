@@ -871,6 +871,9 @@
         // Flag to check if we need detailed view or not
         let useDetailedView = false;
         
+        // Global flag to track if Sanskrit subject exists
+        window.hasSanskritSubject = false;
+        
         async function fetchDataFromBackend(rollNumber) {
             try {
                 // Start timing the API response
@@ -1097,6 +1100,12 @@
                         if (mainSubjects.length > 0 && activeComponents.size > 0) {
                             useDetailedView = true;
                         }
+                        
+                        // Check if Sanskrit subject exists and set global flag
+                        window.hasSanskritSubject = mainSubjects.some(subject => 
+                            subject.name && subject.name.toLowerCase().includes('sanskrit')
+                        );
+                        console.log("Sanskrit subject exists:", window.hasSanskritSubject);
                     }
                     
                     // Add processed data to the result
@@ -1375,22 +1384,16 @@
                          activeComponents.includes("Annual_Exam")) {
                     finalMaxMarks = 20; // Periodic_Test in Annual_Exam context
                 }
-                else if (componentName === "Mid_Term" && 
-                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
-                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
+                // Special case handling for Mid Term in Sanskrit
+                else if (componentName === "Mid_Term" && window.hasSanskritSubject) {
                     finalMaxMarks = 60; // Mid_Term for Sanskrit subject
                 }
                 // Special case for MDP in Sanskrit subjects
-                else if (componentName === "MDP" && 
-                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
-                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit")) && 
-                        formattedName.toLowerCase().includes("mdp")) {
+                else if (componentName === "MDP" && window.hasSanskritSubject) {
                     finalMaxMarks = 10; // MDP for Sanskrit subject
                 }
                 // Special case for SEE in Sanskrit subjects
-                else if (componentName === "SEE" && 
-                        (document.getElementById('detailedTableBody').textContent.includes("Sanskrit") || 
-                         document.getElementById('simpleTableBody').textContent.includes("Sanskrit"))) {
+                else if (componentName === "SEE" && window.hasSanskritSubject) {
                     finalMaxMarks = 60; // SEE for Sanskrit subject
                 }
                 // Special handling for SEE component
@@ -1461,29 +1464,6 @@
             const tableBody = document.getElementById('detailedTableBody');
             tableBody.innerHTML = '';
             
-            // Track if we have Sanskrit subject
-            let hasSanskritSubject = false;
-            
-            // Check if Sanskrit subject exists first
-            subjects.forEach(subject => {
-                if (subject.name && subject.name.toLowerCase().includes('sanskrit')) {
-                    hasSanskritSubject = true;
-                }
-                
-                // Also check for Periodic Test-I and Periodic Test-II
-                if (subject.components) {
-                    if (subject.components["Periodic_Test-I"] || subject.components["Periodic_Test-I_Obtained"]) {
-                        window.hasPeriodicTestI = true;
-                    }
-                    if (subject.components["Periodic_Test-II"] || subject.components["Periodic_Test-II_Obtained"]) {
-                        window.hasPeriodicTestII = true;
-                    }
-                }
-            });
-            
-            // Store this for component max marks calculation
-            window.hasSanskritSubject = hasSanskritSubject;
-            
             // Add subject rows to the detailed table
             subjects.forEach(subject => {
                 const row = document.createElement('tr');
@@ -1519,39 +1499,9 @@
                 
                 tableBody.appendChild(row);
             });
-            
-            // After populating the table, update the table headers if needed
-            // This ensures max marks values are accurate based on subject context
-            if (hasSanskritSubject) {
-                updateComponentMaxMarks();
-            }
         }
         
-        // Function to update component max marks when needed
-        function updateComponentMaxMarks() {
-            const tableHead = document.getElementById('detailedTableHead');
-            const headerRows = tableHead.querySelectorAll('tr');
-            
-            // Skip if there's no second row for component headers
-            if (headerRows.length < 2) return;
-            
-            // Get the component headers from the second row
-            const componentHeaders = headerRows[1].querySelectorAll('th');
-            
-            // Update max marks for Sanskrit-specific components if needed
-            componentHeaders.forEach(header => {
-                const headerText = header.textContent.toLowerCase();
-                
-                // Check for Mid_Term component which has different max marks for Sanskrit
-                if (headerText.includes('mid term') && window.hasSanskritSubject) {
-                    // Find the max marks display element
-                    const maxMarksDiv = header.querySelector('div:nth-child(2)');
-                    if (maxMarksDiv) {
-                        maxMarksDiv.textContent = '(60)';
-                    }
-                }
-            });
-        }
+        // Function to update component max marks when needed - Removed as no longer needed
 
         function populateSimpleTable(subjects) {
             const tableBody = document.getElementById('simpleTableBody');
@@ -1594,6 +1544,9 @@
             
             // Reset detailed view flag
             useDetailedView = false;
+            
+            // Reset Sanskrit subject flag
+            window.hasSanskritSubject = false;
             
             // Validate input
             if (!rollNumber.trim()) {
